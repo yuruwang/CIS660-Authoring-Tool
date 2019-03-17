@@ -1,0 +1,4 @@
+﻿  ProceduralFacade.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(74): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
+  InverseProceduralFacade.vcxproj -> E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\Debug\InverseProceduralFacade.exe
+  InverseProceduralFacade.vcxproj -> E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\Debug\InverseProceduralFacade.pdb (Full PDB)
