@@ -6,19 +6,42 @@ Shape::Shape(const string& name, bool isTerminal, vec3 size) : name(name), isTer
 
 }
 
-Facade::Facade(const string& facadeName): name(facadeName) {
+Facade::Facade(const string& facadeName, const vec3& defualtSize): name(facadeName), 
+																	axiom(Shape("building", false, defualtSize)) {
+	
 	// load grammar from file
 	grammar = Grammar(facadeName);
 
 	// load materials data
-	string materialsFilePath = "sddedwd"; // place holder for now
+	string materialsFilePath = "./material/" + facadeName + ".txt"; // place holder for now
 	loadMaterialsFromFile(materialsFilePath);
 
 	// initialize axiom shape
 }
 
 void Facade::loadMaterialsFromFile(const string& filePath) {
+	string line;
+	ifstream file(filePath);
+	if (file.is_open())
+	{
+		while (file.good())
+		{
+			getline(file, line);
+			if (line.length() == 0) {
+				break;
+			}
+			// split string into tokens
+			string buf;                 // Have a buffer string
+			stringstream ss(line);       // Insert the string into a stream
+			vector<string> tokens; // Create vector to hold our words
 
+			while (ss >> buf)
+				tokens.push_back(buf);
+			materialTable.insert({ tokens[0], tokens[1] });
+		}
+	}
+	// for each line in p, add production
+	file.close();
 }
 
 

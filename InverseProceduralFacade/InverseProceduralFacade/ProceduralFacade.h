@@ -60,7 +60,7 @@ public:
 	void loadMaterialsFromFile(const string& filePath);
 	void expand();
 
-	Facade(const string& facadeName);
+	Facade(const string& facadeName, const vec3& defualtSize);
 	~Facade() {}
 };
 

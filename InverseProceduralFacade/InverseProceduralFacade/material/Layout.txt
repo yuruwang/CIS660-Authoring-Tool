@@ -1,0 +1,4 @@
+wall1 wall1.obj
+wall2 wall2.obj
+window1 window1.obj
+window2 window2.obj
