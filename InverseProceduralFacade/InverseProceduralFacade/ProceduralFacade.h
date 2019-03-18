@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <queue>   
 #include <string>
 #include "vec.h"
 
@@ -15,7 +16,6 @@ public:
 	vec3 size;
 	vec3 position;
 	vec3 scale;
-	string material;
 
 	Shape(const string& name, bool isTerminal, vec3 size);
 	~Shape() {}
@@ -33,8 +33,14 @@ public:
 	int numOfChildren;
 	vector<Shape> children;
 
-	Rule(const string& predecessor, int axisId, int ruleType, int numOfChildren);
 	void addChild(Shape& child);
+	vector<Shape> applyTo(const Shape& shape);
+	vector<Shape> splitRule(const Shape& pred, AXIS axis);
+	vector<Shape> repeatRule(const Shape& pred, AXIS axis);
+	vector<float> calcSplitRatio(const vector<Shape>& children, AXIS axis);
+	int calcRepeatTimes(const Shape& pred, const vector<Shape>& repeatChildren, AXIS axis);
+
+	Rule(const string& predecessor, int axisId, int ruleType, int numOfChildren);
 	~Rule() {}
 };
 
@@ -55,7 +61,7 @@ public:
 	Shape axiom;
 	unordered_map<string, string> materialTable;
 	unordered_map<string, vector<Shape>> shapeTable;  // key: materialsName, value: list of Shapes
-	vector<Shape> queue;
+	queue<Shape> queue;
 
 	void loadMaterialsFromFile(const string& filePath);
 	void expand();
