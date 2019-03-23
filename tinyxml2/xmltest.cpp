@@ -5,6 +5,7 @@
 #endif
 
 #include "tinyxml2.h"
+#include "parseLayout.h"
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -317,6 +318,10 @@ int main( int argc, const char ** argv )
 		XMLDocument* doc = new XMLDocument();
 		clock_t startTime = clock();
 		doc->LoadFile( argv[1] );
+		tinyxml2::XMLElement *  elem = doc->RootElement();
+
+		const char* rootstr = elem->GetText();
+		printf("root: %s\n", rootstr);
  		clock_t loadTime = clock();
 		int errorID = doc->ErrorID();
 		delete doc; doc = 0;
@@ -328,7 +333,7 @@ int main( int argc, const char ** argv )
 			printf( "Delete time=%u\n", (unsigned)(deleteTime - loadTime) );
 			printf( "Total time=%u\n",  (unsigned)(deleteTime - startTime) );
 		}
-		exit(0);
+		///exit(0);
 	}
 
 	FILE* fp = fopen( "resources/dream.xml", "r" );
