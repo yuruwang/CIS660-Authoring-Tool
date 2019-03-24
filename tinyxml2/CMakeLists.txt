@@ -11,7 +11,7 @@ if(POLICY CMP0063)
 	cmake_policy(SET CMP0063 OLD)
 endif()
 
-project(tinyxml2)
+project(ParseLayout)
 include(GNUInstallDirs)
 include(CTest)
 #enable_testing()
@@ -26,7 +26,6 @@ set(GENERIC_LIB_SOVERSION "7")
 
 ################################
 # Add definitions
-
 ################################
 # Add targets
 # By Default shared library is being built
@@ -82,12 +81,13 @@ install(TARGETS tinyxml2
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
+#  add sources to include in the build
 if(BUILD_TESTING AND BUILD_TESTS)
-  add_executable(xmltest xmltest.cpp)
+  add_executable(xmltest xmltest.cpp parseLayout.cpp efloat.cpp floatparts.cpp)
   add_dependencies(xmltest tinyxml2)
   target_link_libraries(xmltest tinyxml2)
-
+  target_link_libraries(xmltest)
+  set(TARGET xmltest VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
   # Copy test resources and create test output directory
   add_custom_command(TARGET xmltest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources $<TARGET_FILE_DIR:xmltest>/resources

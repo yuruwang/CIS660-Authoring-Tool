@@ -1,15 +1,15 @@
 #include "tinyxml2.h"
-
+#include "efloat.h"
 
 class  Position
 {
 public:
-	Position(double x, double y, double z);
-	double x() const;
+	Position(float x, float y, float z);
+	float x() const;
 private:
-	double xval;
-	double yval;
-	double zval;
+	Efloat xval;
+	float yval;
+	float zval;
 };
 
 class BoundBox
