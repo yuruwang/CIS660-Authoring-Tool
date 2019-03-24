@@ -318,10 +318,20 @@ int main( int argc, const char ** argv )
 		XMLDocument* doc = new XMLDocument();
 		clock_t startTime = clock();
 		doc->LoadFile( argv[1] );
-		tinyxml2::XMLElement *  elem = getMainShape(doc);
-
-		const char* rootstr = elem->GetText();
-		printf("root: %s\n", rootstr);
+		tinyxml2::XMLNode *  node = getMainShape(doc);
+		Node* x = new Node(node);
+		delete x;
+		tinyxml2::XMLElement * elem = node->FirstChildElement("Name");
+		const char*  rootstr= elem->GetText();
+		printf("shapeID: %s\n", rootstr);
+		elem = node->FirstChildElement("SplitsX");
+		bool children = elem->NoChildren();
+		printf("No XChildren: %d\n", children);
+		elem = node->FirstChildElement("SplitsY");
+		children = elem->NoChildren();
+		printf("No YChildren: %d\n", children);
+		node = node->FirstChildElement("BBox");
+		BoundBox b(node);
  		clock_t loadTime = clock();
 		int errorID = doc->ErrorID();
 		delete doc; doc = 0;
