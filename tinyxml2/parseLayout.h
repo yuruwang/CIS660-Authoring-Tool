@@ -1,3 +1,4 @@
+#pragma
 #include "tinyxml2.h"
 #include "efloat.h"
 
@@ -5,7 +6,7 @@ class  Position
 {
 public:
 	Position(float x, float y, float z);
-	float x() const;
+	Efloat x() const;
 private:
 	Efloat xval;
 	float yval;
@@ -17,4 +18,6 @@ class BoundBox
 
 };
 
+tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);
 
+tinyxml2::XMLElement* getMainShape(tinyxml2::XMLDocument* doc);

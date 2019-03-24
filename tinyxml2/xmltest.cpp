@@ -318,7 +318,7 @@ int main( int argc, const char ** argv )
 		XMLDocument* doc = new XMLDocument();
 		clock_t startTime = clock();
 		doc->LoadFile( argv[1] );
-		tinyxml2::XMLElement *  elem = doc->RootElement();
+		tinyxml2::XMLElement *  elem = getMainShape(doc);
 
 		const char* rootstr = elem->GetText();
 		printf("root: %s\n", rootstr);
