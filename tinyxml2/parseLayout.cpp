@@ -54,9 +54,9 @@ EVector getPosition(const tinyxml2::XMLNode * node)
 	{
 		throw std::runtime_error("failed Z Conversion");
 	}
-	Efloat xE(xval, 3e-7, Efloat::Normal);
-	Efloat yE(yval, 3e-7, Efloat::Normal);
-	Efloat zE(yval, 3e-7, Efloat::Normal);
+	Efloat xE(xval, 6e-7, Efloat::Normal);
+	Efloat yE(yval, 6e-7, Efloat::Normal);
+	Efloat zE(yval, 6e-7, Efloat::Normal);
 	return EVector(xE, yE, zE);
 }
 Layout::BoundBox::BoundBox(){}
