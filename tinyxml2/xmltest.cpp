@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <memory>
 
 #if defined( _MSC_VER ) || defined (WIN32)
 	#include <crtdbg.h>
@@ -318,9 +319,8 @@ int main( int argc, const char ** argv )
 		XMLDocument* doc = new XMLDocument();
 		clock_t startTime = clock();
 		doc->LoadFile( argv[1] );
-		tinyxml2::XMLNode *  node = getMainShape(doc);
-		Node* x = new Node(node);
-		delete x;
+		tinyxml2::XMLNode *  node = Layout::getMainShape(doc);
+		std::unique_ptr<Layout::Node> x (new Layout::Node(node));
 		tinyxml2::XMLElement * elem = node->FirstChildElement("Name");
 		const char*  rootstr= elem->GetText();
 		printf("shapeID: %s\n", rootstr);
@@ -331,7 +331,7 @@ int main( int argc, const char ** argv )
 		children = elem->NoChildren();
 		printf("No YChildren: %d\n", children);
 		node = node->FirstChildElement("BBox");
-		BoundBox b(node);
+		Layout::BoundBox b(node);
  		clock_t loadTime = clock();
 		int errorID = doc->ErrorID();
 		delete doc; doc = 0;
