@@ -320,7 +320,12 @@ int main( int argc, const char ** argv )
 		clock_t startTime = clock();
 		doc->LoadFile( argv[1] );
 		tinyxml2::XMLNode *  node = Layout::getMainShape(doc);
-		std::unique_ptr<Layout::Node> x (new Layout::Node(node));
+		Layout::XMLNodePr pr(node,
+			std::unique_ptr<Layout::BoundBox>(
+				new Layout::BoundBox(node->FirstChildElement("BBox"))));
+		Layout::XMLNodePr pr2 = std::move(pr);
+		EVector leftCorner(0, 0, 0);
+		std::unique_ptr<Layout::Node> x (new Layout::Node(std::move(pr2), leftCorner));
 		tinyxml2::XMLElement * elem = node->FirstChildElement("Name");
 		const char*  rootstr= elem->GetText();
 		printf("shapeID: %s\n", rootstr);
@@ -330,8 +335,6 @@ int main( int argc, const char ** argv )
 		elem = node->FirstChildElement("SplitsY");
 		children = elem->NoChildren();
 		printf("No YChildren: %d\n", children);
-		node = node->FirstChildElement("BBox");
-		Layout::BoundBox b(node);
  		clock_t loadTime = clock();
 		int errorID = doc->ErrorID();
 		delete doc; doc = 0;

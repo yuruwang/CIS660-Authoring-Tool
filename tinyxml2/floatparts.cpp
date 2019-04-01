@@ -193,7 +193,7 @@ bool testFloatPartsComparison()
     a = FloatParts{0.01f};
     if (a <= b || b > a) 
     	return success;
-    a = FloatParts {-0.0001};
+    a = FloatParts {-0.0001f};
     if ( b >= a || (a < b))
     	return success;
     a = FloatParts {0.001f};
@@ -211,8 +211,8 @@ void testFloatParts(){
 	float nan{std::numeric_limits<float>::quiet_NaN()};
 	std::cout << " Float and 32 bit same size : "; 
 	std::cout << std::boolalpha << (sizeof(float) == sizeof(uint32_t)) << std::endl;
-	printOne(1.4e-45);
-	printOne(-1.4e-45);
+	printOne(1.4e-45f);
+	printOne(-1.4e-45f);
 	printOne(0.5f);
 	printOne(3.75f);
 	printOne(inf);
