@@ -78,7 +78,14 @@ Layout::BoundBox::BoundBox(const tinyxml2::XMLNode* node)
 		throw std::runtime_error("size not consistent");
 	}
 }
-
+bool Layout::NodeValue::terminal() const
+{
+	return n == 1;
+}
+bool Layout::Node::terminal() const
+{	
+	return v -> terminal();
+}
 const EVector&  Layout::BoundBox::min() const
 {
 		return minVal;
@@ -153,16 +160,21 @@ std::vector<std::shared_ptr<Layout::Node>> GetChildren(const std::vector<Efloat>
 	}
 	return children;
 }
-Layout::Node::Node(Layout::XMLNodePr&& nodePr, const EVector&  minVal)
+std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, const EVector&  minVal, int Level, 
+		           nameMap namesFound)
 {
 	const tinyxml2::XMLElement* elem = nodePr.first->FirstChildElement("Level");
 	////// params in file but not used:
 	int lvl;
-	v = std::make_shared<NodeValue>();
+	std::shared_ptr<NodeValue> v = std::make_shared<NodeValue>();
 	tinyxml2::XMLError err = elem ->QueryIntText(&lvl);
 	if (err != tinyxml2::XML_SUCCESS)
 	{
 		throw std::runtime_error("failed Level Conversion");
+	}
+	if (lvl != Level) 
+	{
+		throw std::runtime_error("level is not expected");
 	}
 	elem = nodePr.first->FirstChildElement("UId");
 	int u;
@@ -192,7 +204,9 @@ Layout::Node::Node(Layout::XMLNodePr&& nodePr, const EVector&  minVal)
 		throw std::runtime_error("Box Location Error");
 	}
 	const tinyxml2::XMLNode* dir = nodePr.first->FirstChildElement("SplitsX");
-	splitDir = static_cast<EVector::Axis>(dir -> NoChildren());
+	EVector::Axis splitDir = static_cast<EVector::Axis>(dir -> NoChildren());
+	std::vector<Efloat> splits;
+	std::vector<std::shared_ptr<Node>> children;
 	if (splitDir == EVector::Axis::X)
 	{
 		dir = nodePr.first ->FirstChildElement("SplitsX");
@@ -202,9 +216,14 @@ Layout::Node::Node(Layout::XMLNodePr&& nodePr, const EVector&  minVal)
 		dir = nodePr.first ->FirstChildElement("SplitsY");
 		splits = parseList(dir, minVal.y);
 	}
-	children = GetChildren(splits, splitDir, nodePr.first, minVal);
+	children = GetChildren(splits, splitDir, nodePr.first, minVal, level + 1, namesFound);
+	std::shared_ptr<Node> thisNode;
 	if ( children.size() == 0) {
 		v -> n = 1; // only one Node contained here
+		if (!NodePr.first->NoChildren()){
+			std::runtime_error("There should be no children, but children found.");
+		}
+		thisNode = std::make_shared<Node>();
 	}
 	else {
 		v -> n = 0;
@@ -214,9 +233,36 @@ Layout::Node::Node(Layout::XMLNodePr&& nodePr, const EVector&  minVal)
 		{
 			v-> n += child -> v->n;
 		}
+		if (NodePr.first->NoChildren() || v -> n == 0)
+		{
+			std::runtime_error("There are children but none found");
+		}
+		thisNode = std::make_shared<BranchNode>();
+	}
+	thisNode ->splits = std::move(splits);
+	thisNode ->splitDir = splitDir;
+	thisNode ->children = std::move(children);
+	NameMap::iterator it = namesFound(v->name);
+	if (it == namesFound.end())
+	{
+	/// add all the nodevalue to all the maps 
+	}
+	else {
+	      // get the Node that was used before and check if it is the same
+	      // as this v.
 	}
 }
 
+Layout::BottomUp( const char * filename)
+{
+		XMLDocument doc;
+		doc->LoadFile( filename);
+		tinyxml2::XMLNode *  node = Layout::getMainShape(&doc);
+		Layout::XMLNodePr pr(node,
+			std::unique_ptr<Layout::BoundBox>(
+				new Layout::BoundBox(node->FirstChildElement("BBox"))));
+		EVector leftCorner(0, 0, 0);
+		spataLayout::Node(std::move(pr2), leftCorner));
 /***********************************************************
 	while (SerShape != nullptr)
 	{
