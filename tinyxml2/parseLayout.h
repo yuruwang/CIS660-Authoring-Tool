@@ -70,10 +70,12 @@ namespace Layout {
  * GroupPair is value pair stored in the unordered maps or the hash table 
  *
  */
-	typedef vector<int>::size_type uIDType; // index of vector type used to access RepeatGroups
-	// first is the shared pointer to unique groups, second is a list of
-	// lower left locations
+	typedef unsigned uIDType; // this is the index of the datastructures
+	// GroupPair: first is the shared pointer to unique groups, second is a list of
+	// 		lower left locations
 	typedef std::pair<std::shared_ptr<Node>, std::list<EVector>>  GroupPair;
+	// GroupMap holds a hashtable of uIDTypes and GroupPairs
+	typedef std::unordered_map<uIDType, GroupPair> GroupMap;
 	// stores Groups indexed by their YWidth.  For the same YWidth there may be 
 	// multiple groups
 	typedef std::unordered_multimap<const Efloat, uIDType> YWidth;
@@ -81,13 +83,11 @@ namespace Layout {
 	//   for each YWidth.  That returns a hash table
 	// of Groups ordered by XWidth;
 	typedef std::unordered_map<const Efloat, YWidth>  XYWidth;
-	// XY values as an Efloat
-	typedef std::pair<Efloat, Efloat>   XYE;
 	// map of all the groups at a location
-	typedef std::unordered_map< const XYE, XYWidth>  GroupLoc;
+	typedef std::unordered_map< const EVector, XYWidth>  GroupLoc;
 	// map of all the groups at a location
 	typedef std::unordered_map<std::string, uIDType> nameMap; // holds the names of all groups
-	typedef std::pair<uIDType, std::list<EVector>>  splitGroups; // all the groups that are split by a line
+	typedef std::pair<uIDType, std::list<EVector>>  SplitGroups; // all the groups that are split by a line
 
 /* first unsigned holds the id of the unique group, the second holds the pointer to the terminal region
  * in the lower left corner to identify the group location
@@ -95,9 +95,9 @@ namespace Layout {
 	typedef std::pair<unsigned, std::weak_ptr<Node>>  GroupPairWk;
 /* BranchNode holds a hash map of group ID and a list of locations of that group that are split by the 
  * splitline
- *
+ ******************************************************************************************************/
 	struct BranchNode :Node {
-			std::unordered_map<uIDType, std::list<EVector>> SplitGroups;
+			SplitGroups splitGroups;
 	};
 /********************************************************************************************************
  * LeafNode holds the leaf node
@@ -111,16 +111,26 @@ namespace Layout {
 		// by first opening the file
 		BottomUp( const char *);
 		// holds all the grouped nodes that repeat more than once.  One copy per unique ID
-		std::unordered_map<const unsigned, std::shared_ptr<Node>> Groups;
+		// give this an index and it returns a GroupPair, a shared
+		// pointer to the group and the list of locations, the lower
+		// left coordinate
+		GroupMap groups;
 		// holds the spatial data structure for the location of the NT and terminal regions
 		std::shared_ptr<Node> location;
-		std::vector<GroupPair>  uniqueGroups; // Groups and their locations arranged in a vector
 		GroupLoc LL;  // groups that have a LowerLeft corner at a Location
 		GroupLoc UR;  // groups that have an upperRight corner at a Location
 	private:
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
 		std::shared_ptr<Node> XMLNode(XMLNodePr&& , const EVector& minVal, int level, nameMap namesFound);
+		uIDType next;
+		// adds a repeated Terminal to all the the maps
+		void addRepeatTerminalToMaps(uIDType termId, EVector location, std::shared_ptr<NodeValue currentValue);
+		// check groups for a match with currentValue and update the
+		// location if it is there and add a new record to nameMap and
+		// groups if it is not
+		GroupMap::iterator addTerminalToGroups(EVector location, std::shared_ptr<NodeValue> currentValue, 
+				     nameMap& nm);
 
 	};
 	tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);
