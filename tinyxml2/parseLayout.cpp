@@ -98,7 +98,19 @@ const EVector&  Layout::BoundBox::size() const
 {
 	       return sizeV;
 }
+
+Layout::Node::Node(EVector::Axis sd, std::vector<Efloat>&& ss, std::vector<stde::shared_ptr<Node>>&& cn, 
+				std::shared_ptr<NodeValue> vd = nullptr): splitDir{sd}, splits{std::move(ss)},
+	                        children{ std::move(cn)}, v{vd} 
+{}
 Layout::Node::Node(){}
+
+Layout::Node::Node(std::shared_ptr<NodeValue> vv) : v (vv) {} 
+
+Layout::BranchNode::BranchNode(EVector::Axis sd, std::vector<Efloat>&& ss,
+					std::vector<stde::shared_ptr<Node>>&& cn, 
+				std::shared_ptr<NodeValue> v = nullptr):Node(sd, std::move(ss), std::move(cn), v)
+{}
 // returns a list of Children Nodes ordered according to the splits
 // The node passed in is the Top level serializable node
 std::vector<std::shared_ptr<Layout::Node>> GetChildren(const std::vector<Efloat>& splits, 
@@ -224,7 +236,8 @@ std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, cons
 		if (!NodePr.first->NoChildren()){
 			std::runtime_error("There should be no children, but children found.");
 		}
-		thisNode = std::make_shared<Node>();
+		GroupMap::iterator it = addTerminalToGroups(minVal, v, namesFound);` 
+		thisNode = it->second->first;
 	}
 	else {
 		v -> n = 0;
@@ -238,12 +251,8 @@ std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, cons
 		{
 			std::runtime_error("Children report terminals, but none found");
 		}
-		thisNode = std::make_shared<BranchNode>();
+		thisNode = std::make_shared<BranchNode>(splitDir, std::move(splits), std::move(children), v);
 	}
-	thisNode ->splits = std::move(splits);
-	thisNode ->splitDir = splitDir;
-	thisNode ->children = std::move(children);
-	NameMap::iterator it = namesFound(v->name);
 	if (it == namesFound.end())
 	{
 	/// add all the nodevalue to all the maps 
@@ -252,12 +261,23 @@ std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, cons
 	       
 	}
 }
+bool checkUnique_location( EVector newvalue, std::list<EVector>& list)
+{
+	for ( EVector& val : list)
+	{
+		if (val == newvalue)
+		{
+			return false;
+		}
+	}
+	return true;
+}
 bool checkNodeValues(const std::make_shared<NodeValue> a, const std::make_shared<NodeValue> b)
 {
 	return a == b || *a == *b;
 }
 Layout::GroupMap::iterator 
-   BottomUp::addTerminalToGroups(EVector location, std::shared_ptr<NodeValue> v, 
+   BottomUp::addTerminalToGroups(const EVector& location, std::shared_ptr<NodeValue> v, 
 				     nameMap& nm)
 {
 	NameMap::iterator itName = nm.find( v->name );
@@ -267,15 +287,13 @@ Layout::GroupMap::iterator
 	{
 		std::pair<nameMap::iterator, bool> insertName =
 			  nm.insert(std::make_pair(v->name, next));
-		{
-			if (!insertName.second){
+		if (!insertName.second){
 				throw std::runtime_error("Failed to insert in Name Map");
 			}
-		}
 		std::list<EVector> thisList;
 		thisList.push_back(location);
-		std::shared_ptr<Node> node = std::make_shared<Node>();
-		node->v = v;
+		v->uid = next;
+		std::shared_ptr<Node> node = std::make_shared<Node>(v);
 		GroupPair pr = std::make_pair(std::move(node), std::move(thisList));
 		std::pair<GroupMap::iterator, bool> insertRes;
 		insertRes = groups.insert(std::make_pair(next++, std::move(pr)));
@@ -289,13 +307,28 @@ Layout::GroupMap::iterator
 	}
 	else // Name is found already so check if the Node already exists and is the same
 	{
+		// find name in Groups
 		itGroup  = groups.find(it.name -> second);
 		if (itGroup == groups.end())
 		{
 			std::runtime_error("Group corresponding to name not found.");
-		// check if it is the same;
-		std::shared_ptr<NodeValue> v { itGroup -> second ->first -> v};
+		}
+		//check if location is unique and add it
+		std::list<EVector>& locs = itGroup->second.second;
+		if ( !checkUnique_location(location, locs))
+		{
+		    std::runtime_error("Location found prior");
+		}
+		locs.push_back(location);
+		// check value if the same
+		std::shared_ptr<NodeValue> savedG = itGroup -> second.first;
+		v -> uid = savedG -> uid;
+		if (!checkNodeValues( v->uid, savedG))
+		{
+			std::runtime_error("new and Saved terminals do not match");
+		}
 	}
+	return itGroup;
 }
 
 Layout::BottomUp( const char * filename): next{0}

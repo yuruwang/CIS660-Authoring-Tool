@@ -31,6 +31,7 @@ namespace Layout {
 	
 	};
 	// holds a square Facade element.
+	typedef unsigned uIDType; // this is the index of the datastructures
 	enum FacadeType {NT, T};
 /******************************************************************************
  * @struct   NodeValue 
@@ -39,7 +40,7 @@ namespace Layout {
  * @notes
  * ****************************************************************************/
 	struct NodeValue {
-		unsigned   	 uid;  // unique id of the node
+		uIDType   	 uid;  // unique id of the node
 		std::string 	name;  //name of the node
 		EVector         size; // holds the size of the box
 		unsigned           n;  // number of terminals in this node Term = 1
@@ -57,6 +58,9 @@ namespace Layout {
  * 		through several additions.  This way the shared pointers to NodeValue get reused
  * ******************************************************************************/
 	struct Node {
+		Node(EVector::Axis sd, std::vector<Efloat>&& ss, std::vector<stde::shared_ptr<Node>>&& cn, 
+				std::shared_ptr<NodeValue> v = nullptr); 
+		Node(std::shared_ptr<NodeValue> v = nullptr); 
 		Node();
 		std::shared_ptr<NodeValue>  v; // the potentially repeated structure
 						// stores all the information of the node
@@ -97,7 +101,10 @@ namespace Layout {
  * splitline
  ******************************************************************************************************/
 	struct BranchNode :Node {
-			SplitGroups splitGroups;
+		        BranchNode(EVector::Axis sd, std::vector<Efloat>&& ss,
+					std::vector<stde::shared_ptr<Node>>&& cn, 
+				std::shared_ptr<NodeValue> v = nullptr); 
+			std::unordered_map<uIDType,std::list<EVector>> splitGroups;
 	};
 /********************************************************************************************************
  * LeafNode holds the leaf node
@@ -124,12 +131,10 @@ namespace Layout {
 		//have this XMLNodePr as a root.
 		std::shared_ptr<Node> XMLNode(XMLNodePr&& , const EVector& minVal, int level, nameMap namesFound);
 		uIDType next;
-		// adds a repeated Terminal to all the the maps
-		void addRepeatTerminalToMaps(uIDType termId, EVector location, std::shared_ptr<NodeValue currentValue);
 		// check groups for a match with currentValue and update the
 		// location if it is there and add a new record to nameMap and
 		// groups if it is not
-		GroupMap::iterator addTerminalToGroups(EVector location, std::shared_ptr<NodeValue> currentValue, 
+		GroupMap::iterator addTerminalToGroups(const EVector& location, std::shared_ptr<NodeValue> currentValue, 
 				     nameMap& nm);
 
 	};
