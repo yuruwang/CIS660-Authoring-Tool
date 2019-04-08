@@ -316,37 +316,11 @@ int main( int argc, const char ** argv )
 	}
 
 	if ( argc > 1 ) {
-		XMLDocument* doc = new XMLDocument();
 		clock_t startTime = clock();
-		doc->LoadFile( argv[1] );
-		tinyxml2::XMLNode *  node = Layout::getMainShape(doc);
-		Layout::XMLNodePr pr(node,
-			std::unique_ptr<Layout::BoundBox>(
-				new Layout::BoundBox(node->FirstChildElement("BBox"))));
-		Layout::XMLNodePr pr2 = std::move(pr);
-		EVector leftCorner(0, 0, 0);
-		std::unique_ptr<Layout::Node> x (new Layout::Node(std::move(pr2), leftCorner));
-		tinyxml2::XMLElement * elem = node->FirstChildElement("Name");
-		const char*  rootstr= elem->GetText();
-		printf("shapeID: %s\n", rootstr);
-		elem = node->FirstChildElement("SplitsX");
-		bool children = elem->NoChildren();
-		printf("No XChildren: %d\n", children);
-		elem = node->FirstChildElement("SplitsY");
-		children = elem->NoChildren();
-		printf("No YChildren: %d\n", children);
+		Layout::BottomUp bu(argv[1]);
  		clock_t loadTime = clock();
-		int errorID = doc->ErrorID();
-		delete doc; doc = 0;
- 		clock_t deleteTime = clock();
-
-		printf( "Test file '%s' loaded. ErrorID=%d\n", argv[1], errorID );
-		if ( !errorID ) {
-			printf( "Load time=%u\n",   (unsigned)(loadTime - startTime) );
-			printf( "Delete time=%u\n", (unsigned)(deleteTime - loadTime) );
-			printf( "Total time=%u\n",  (unsigned)(deleteTime - startTime) );
-		}
-		///exit(0);
+		printf( "Test file '%s' loaded. \n", argv[1]);
+		printf( "Load time=%u\n",   (unsigned)(loadTime - startTime) );
 	}
 
 	FILE* fp = fopen( "resources/dream.xml", "r" );

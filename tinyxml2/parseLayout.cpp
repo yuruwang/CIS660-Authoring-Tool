@@ -99,8 +99,8 @@ const EVector&  Layout::BoundBox::size() const
 	       return sizeV;
 }
 
-Layout::Node::Node(EVector::Axis sd, std::vector<Efloat>&& ss, std::vector<stde::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> vd = nullptr): splitDir{sd}, splits{std::move(ss)},
+Layout::Node::Node(EVector::Axis sd, std::vector<Efloat>&& ss, std::vector<std::shared_ptr<Node>>&& cn, 
+				std::shared_ptr<NodeValue> vd ): splitDir{sd}, splits{std::move(ss)},
 	                        children{ std::move(cn)}, v{vd} 
 {}
 Layout::Node::Node(){}
@@ -108,27 +108,27 @@ Layout::Node::Node(){}
 Layout::Node::Node(std::shared_ptr<NodeValue> vv) : v (vv) {} 
 
 Layout::BranchNode::BranchNode(EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::vector<stde::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> v = nullptr):Node(sd, std::move(ss), std::move(cn), v)
+					std::vector<std::shared_ptr<Node>>&& cn, 
+				std::shared_ptr<NodeValue> v ):Node(sd, std::move(ss), std::move(cn), v)
 {}
 // returns a list of Children Nodes ordered according to the splits
 // The node passed in is the Top level serializable node
-std::vector<std::shared_ptr<Layout::Node>> GetChildren(const std::vector<Efloat>& splits, 
+std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const std::vector<Efloat>& splits, 
 				EVector::Axis ax, const tinyxml2::XMLNode * parent, const EVector& minVal, 
-				int level, nameMap namesFound)
+				int level, Layout::nameMap& namesFound)
 {
-	std::vector<std::shared_ptr<Layout::Node>> children;
+	std::vector<std::shared_ptr<Node>> children;
 	// will be for Serializable Shape
 	const tinyxml2::XMLNode * SerShape = parent->FirstChildElement("Children");
 	if (SerShape == nullptr) return children;
 	SerShape = SerShape ->FirstChild();
 	// get all the xml nodes and Bounding Boxes
-	std::vector<Layout::XMLNodePr> AllXMLNodes;
+	std::vector<XMLNodePr> AllXMLNodes;
 	while (SerShape != nullptr)
 	{
-		AllXMLNodes.push_back( Layout::XMLNodePr(SerShape, 
-			std::unique_ptr<Layout::BoundBox>( 
-				new Layout::BoundBox(SerShape->FirstChildElement("BBox")))));
+		AllXMLNodes.push_back( XMLNodePr(SerShape, 
+			std::unique_ptr<BoundBox>( 
+				new BoundBox(SerShape->FirstChildElement("BBox")))));
 		SerShape =SerShape ->NextSibling();
 	}
 	bool validLength = (splits.size() == 0 && AllXMLNodes.size() == 0) ||
@@ -141,13 +141,13 @@ std::vector<std::shared_ptr<Layout::Node>> GetChildren(const std::vector<Efloat>
 	if ( ax == EVector::Axis::X)
 	{
 		std::sort(AllXMLNodes.begin(), AllXMLNodes.end(), 
-				[] (const Layout::XMLNodePr& a, const Layout::XMLNodePr& b) -> bool {
+				[] (const XMLNodePr& a, const XMLNodePr& b) -> bool {
 				   return a.second->min().x < b.second->min().x;});
 		EVector childMin = minVal;
 		std::vector<Efloat>::size_type indx = 0;
-		for (  Layout::XMLNodePr& pr : AllXMLNodes)
+		for (  XMLNodePr& pr : AllXMLNodes)
 		{ 
-			children.push_back(XMLNode(std::move(pr), childMin, level, namesMap));
+			children.push_back(XMLNode(std::move(pr), childMin, level, namesFound));
 			if ( indx < splits.size()) {
 				childMin.x = minVal.x + splits[indx++];
 			}
@@ -156,14 +156,12 @@ std::vector<std::shared_ptr<Layout::Node>> GetChildren(const std::vector<Efloat>
 	}
 	else { 
 		std::sort(AllXMLNodes.begin(), AllXMLNodes.end(), 
-				[] (Layout::XMLNodePr& a, 
-					Layout::XMLNodePr& b) -> bool {
-					//const Efloat ay = a.second.min().y;
-					//const Efloat by = b.second.min().y;
+				[] (XMLNodePr& a, 
+					XMLNodePr& b) -> bool {
 				   return a.second->min().y < b.second->min().y;}); 
 		EVector childMin = minVal;
 		std::vector<Efloat>::size_type indx = 0;
-		for ( Layout::XMLNodePr& pr : AllXMLNodes)
+		for ( XMLNodePr& pr : AllXMLNodes)
 		{ 
 			children.push_back(XMLNode(std::move(pr), childMin, level, namesFound));
 			if ( indx < splits.size()) {
@@ -173,11 +171,12 @@ std::vector<std::shared_ptr<Layout::Node>> GetChildren(const std::vector<Efloat>
 	}
 	return children;
 }
-std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, const EVector&  minVal, int Level, 
-		           nameMap namesFound)
+std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, const EVector&  minVal, int level, 
+		           Layout::nameMap& namesFound)
 {
 	const tinyxml2::XMLElement* elem = nodePr.first->FirstChildElement("Level");
 	////// params in file but not used:
+	const tinyxml2::XMLNode * fchild = nodePr.first->FirstChild();
 	int lvl;
 	std::shared_ptr<NodeValue> v = std::make_shared<NodeValue>();
 	tinyxml2::XMLError err = elem ->QueryIntText(&lvl);
@@ -185,7 +184,7 @@ std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, cons
 	{
 		throw std::runtime_error("failed Level Conversion");
 	}
-	if (lvl != Level) 
+	if (lvl != level) 
 	{
 		throw std::runtime_error("level is not expected");
 	}
@@ -233,11 +232,8 @@ std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, cons
 	std::shared_ptr<Node> thisNode;
 	if ( children.size() == 0) {
 		v -> n = 1; // only one Node contained here
-		if (!NodePr.first->NoChildren()){
-			std::runtime_error("There should be no children, but children found.");
-		}
-		GroupMap::iterator it = addTerminalToGroups(minVal, v, namesFound);` 
-		thisNode = it->second->first;
+		GroupMap::iterator it = addTerminalToGroups(minVal, v, namesFound);
+		thisNode = it->second.first;
 	}
 	else {
 		v -> n = 0;
@@ -247,19 +243,9 @@ std::shared_ptr<Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, cons
 		{
 			v-> n += child -> v->n;
 		}
-		if (NodePr.first->NoChildren() || v -> n == 0)
-		{
-			std::runtime_error("Children report terminals, but none found");
-		}
 		thisNode = std::make_shared<BranchNode>(splitDir, std::move(splits), std::move(children), v);
 	}
-	if (it == namesFound.end())
-	{
-	/// add all the nodevalue to all the maps 
-	}
-	else {
-	       
-	}
+	return thisNode;
 }
 bool checkUnique_location( EVector newvalue, std::list<EVector>& list)
 {
@@ -272,20 +258,29 @@ bool checkUnique_location( EVector newvalue, std::list<EVector>& list)
 	}
 	return true;
 }
-bool checkNodeValues(const std::make_shared<NodeValue> a, const std::make_shared<NodeValue> b)
+bool Layout::operator==(const Layout::NodeValue& a, const Layout::NodeValue& b)
+{
+	bool equal {a.uid == b.uid};
+	equal = equal && a.name == b.name;
+	equal = equal && a.size == b.size;
+	equal = equal && a.n == b.n;
+	return equal;
+}
+
+bool checkNodeValues(const std::shared_ptr<Layout::NodeValue> a, const std::shared_ptr<Layout::NodeValue> b)
 {
 	return a == b || *a == *b;
 }
 Layout::GroupMap::iterator 
-   BottomUp::addTerminalToGroups(const EVector& location, std::shared_ptr<NodeValue> v, 
-				     nameMap& nm)
+	   Layout::BottomUp::addTerminalToGroups(const EVector& location, std::shared_ptr<Layout::NodeValue> v, 
+				     Layout::nameMap& nm)
 {
-	NameMap::iterator itName = nm.find( v->name );
+	nameMap::iterator itName = nm.find( v->name );
 	GroupMap::iterator itGroup;
 	// not found 
 	if (itName == nm.end())
 	{
-		std::pair<nameMap::iterator, bool> insertName =
+		std::pair<Layout::nameMap::iterator, bool> insertName =
 			  nm.insert(std::make_pair(v->name, next));
 		if (!insertName.second){
 				throw std::runtime_error("Failed to insert in Name Map");
@@ -293,8 +288,7 @@ Layout::GroupMap::iterator
 		std::list<EVector> thisList;
 		thisList.push_back(location);
 		v->uid = next;
-		std::shared_ptr<Node> node = std::make_shared<Node>(v);
-		GroupPair pr = std::make_pair(std::move(node), std::move(thisList));
+		GroupPair pr = std::make_pair(std::make_shared<Node>(v), std::move(thisList));
 		std::pair<GroupMap::iterator, bool> insertRes;
 		insertRes = groups.insert(std::make_pair(next++, std::move(pr)));
 		if (insertRes.second) {
@@ -308,7 +302,7 @@ Layout::GroupMap::iterator
 	else // Name is found already so check if the Node already exists and is the same
 	{
 		// find name in Groups
-		itGroup  = groups.find(it.name -> second);
+		itGroup  = groups.find(itName -> second);
 		if (itGroup == groups.end())
 		{
 			std::runtime_error("Group corresponding to name not found.");
@@ -321,9 +315,9 @@ Layout::GroupMap::iterator
 		}
 		locs.push_back(location);
 		// check value if the same
-		std::shared_ptr<NodeValue> savedG = itGroup -> second.first;
-		v -> uid = savedG -> uid;
-		if (!checkNodeValues( v->uid, savedG))
+		std::shared_ptr<Node> savedG = itGroup -> second.first;
+		v->uid = savedG->v->uid;
+		if (!checkNodeValues( v, savedG->v))
 		{
 			std::runtime_error("new and Saved terminals do not match");
 		}
@@ -331,17 +325,23 @@ Layout::GroupMap::iterator
 	return itGroup;
 }
 
-Layout::BottomUp( const char * filename): next{0}
+Layout::BottomUp::BottomUp( const char * filename): next{0}
 {
-		XMLDocument doc;
-		doc->LoadFile( filename);
+		tinyxml2::XMLDocument doc;
+		doc.LoadFile( filename);
 		tinyxml2::XMLNode *  node = Layout::getMainShape(&doc);
 		Layout::XMLNodePr pr(node,
 			std::unique_ptr<Layout::BoundBox>(
 				new Layout::BoundBox(node->FirstChildElement("BBox"))));
+
+		int errorID = doc.ErrorID();
+		if ( errorID != tinyxml2::XML_SUCCESS ) {
+			std::runtime_error("Doc did not read correctly");
+		}
+
 		EVector leftCorner(0, 0, 0);
 		nameMap termNames;
-		location = XMLNode(std::move(pr2), leftCorner, 0, termNames);
+		location = XMLNode(std::move(pr), leftCorner, 0, termNames);
 }
 /***********************************************************
 	while (SerShape != nullptr)
