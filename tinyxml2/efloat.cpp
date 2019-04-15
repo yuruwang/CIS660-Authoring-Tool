@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <string>
 
-
 static const Efloat Zero;
 static const Efloat one(1.f, 0.f, Efloat::NumberType::PowerOf2);
 static const Efloat Mone(-1.f, 0.f,  Efloat::NumberType::PowerOf2);
@@ -31,6 +30,7 @@ Efloat::Efloat(float vf, float errf, NumberType nn): v{vf}, err{errf}, n{nn}
 		err += roundingError();
 	}
 }
+Efloat::~Efloat() {}
 // handles addition: if the sum of the two numbers or if either one is exactly zero,
 // no extra error is added. PowerOf2 gets degraded no normal for addition
 Efloat  operator+(const Efloat f0, const Efloat f1)
@@ -615,6 +615,10 @@ std::ostream& operator<<(std::ostream& ostr, const Efloat b)
 	      ostr <<  std::setw(3) << 'N';
 	}
 	return ostr;
+}
+std::size_t EfloatHash::operator()(const Efloat & x)
+{
+	return float_hash(float(x));
 }
 
 

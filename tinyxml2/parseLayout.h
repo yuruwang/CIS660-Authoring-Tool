@@ -4,10 +4,11 @@
 #include <vector>
 #include <memory>
 #include <utility>
-#include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <map>
 #include <list>
+#include <functional>
 #include "tinyxml2.h"
 namespace Layout {
 /*****************************************************************************************************
@@ -42,7 +43,6 @@ namespace Layout {
 	struct NodeValue {
 		uIDType   	 uid;  // unique id of the node
 		std::string 	name;  //name of the node
-		EVector         size; // holds the size of the box
 		unsigned           n;  // number of terminals in this node Term = 1
 		bool terminal() const;  // terminal there is only one terminal Node here.
 	};
@@ -59,13 +59,13 @@ namespace Layout {
  * 		through several additions.  This way the shared pointers to NodeValue get reused
  * ******************************************************************************/
 	struct Node {
-		Node(EVector::Axis sd, std::vector<Efloat>&& ss, std::vector<std::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> v = nullptr); 
-		Node(std::shared_ptr<NodeValue> v = nullptr); 
-		Node();
+		Node(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss, 
+				std::vector<std::shared_ptr<Node>>&& cn,
+					std::shared_ptr<NodeValue> v); 
 		std::shared_ptr<NodeValue>  v; // the potentially repeated structure
 						// stores all the information of the node
 		bool terminal() const;  // use v's terminal 
+		EVector         size; // holds the size of the box
 		EVector::Axis splitDir; // split along x or y
 		std::vector<Efloat> splits;// the location of the splits
 		std::vector<std::shared_ptr<Node>>  children;
@@ -76,23 +76,32 @@ namespace Layout {
  *
  */
 	typedef unsigned uIDType; // this is the index of the datastructures
-	// GroupPair: first is the shared pointer to unique groups, second is a list of
-	// 		lower left locations
-	typedef std::pair<std::shared_ptr<Node>, std::list<EVector>>  GroupPair;
-	// GroupMap holds a hashtable of uIDTypes and GroupPairs
-	typedef std::unordered_map<uIDType, GroupPair> GroupMap;
+	// GroupPair: first is the shared pointer to unique groups, or groups second is a list of
+	// 		lower left locations. The Node really points to a node
+	// 		in the spatial Structure.  Even if the Nodes are the
+	// 		same type, their sizes could be different.  Thus there
+	// 		is one pointer to each unique node.  The second
+	// 		parameter is the Lower Left start location.
+	typedef std::pair<std::shared_ptr<Node>, EVector>  GroupPair;
+	// List is list of Group Pairs;
+	typedef std::list<GroupPair>   List;
+	// ListIterator is the iterator to traverse the linked list;
+	typedef  List::iterator  ListIterator;
+	// GroupMap holds a hashtable of uIDTypes and a list of Group Pairs
+	// Each groupPair has the same NodeValue but a different Node itself.
+	typedef std::unordered_map<uIDType, List> GroupMap;
 	// stores Groups indexed by their YWidth.  For the same YWidth there may be 
 	// multiple groups
-	typedef std::unordered_multimap<const Efloat, uIDType> YWidth;
-	// first Efloat has Groups ordered by XWidth.  Given a X width, it returns the one mulimap There is only one multimap 
-	//   for each YWidth.  That returns a hash table
-	// of Groups ordered by XWidth;
-	typedef std::unordered_map<const Efloat, YWidth>  XYWidth;
+	typedef std::multimap<const Efloat, std::weak_ptr<Node> > YWidth;
+	// first Efloat has Groups ordered by XWidth.  Given a X width, it
+	// returns the one mulimap.  That  multimap in stored by ywidth.
+	typedef std::map<const Efloat, YWidth>  XYWidth;
 	// map of all the groups at a location
-	typedef std::unordered_map< const EVector, XYWidth>  GroupLoc;
+//	typedef std::unordered_map< , XYWidth>  GroupLoc;
 	// map of all the groups at a location
 	typedef std::unordered_map<std::string, uIDType> nameMap; // holds the names of all groups
 	typedef std::pair<uIDType, std::list<EVector>>  SplitGroups; // all the groups that are split by a line
+	enum GroupType {New, Existing};
 
 /* first unsigned holds the id of the unique group, the second holds the pointer to the terminal region
  * in the lower left corner to identify the group location
@@ -102,14 +111,24 @@ namespace Layout {
  * splitline
  ******************************************************************************************************/
 	struct BranchNode :Node {
-		        BranchNode(EVector::Axis sd, std::vector<Efloat>&& ss,
+		        BranchNode(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss,
 					std::vector<std::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> v = nullptr); 
-			std::unordered_map<uIDType,std::list<EVector>> splitGroups;
+				std::shared_ptr<NodeValue> v); 
+			std::unordered_set<std::shared_ptr<Node>> splitGroups;
 	};
+
 /********************************************************************************************************
- * LeafNode holds the leaf node
+ * LeafNode holds the leaf node nodes these store all the groups that have an
+ * origin in the lower left corner
  */
+
+	struct LeafNode :Node {
+		        LeafNode(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss,
+					std::vector<std::shared_ptr<Node>>&& cn, 
+				std::shared_ptr<NodeValue> v); 
+			// stores all the groups organized by lower left corner
+			XYWidth LL;
+	};
 /*******************************************************************************************************
  * BottomUp   Holds the data structures for the Bottom up approach.
  *
@@ -118,6 +137,7 @@ namespace Layout {
 		// parse the XML Document
 		// by first opening the file
 		BottomUp( const char *);
+	private:
 		// holds all the grouped nodes that repeat more than once.  One copy per unique ID
 		// give this an index and it returns a GroupPair, a shared
 		// pointer to the group and the list of locations, the lower
@@ -125,23 +145,36 @@ namespace Layout {
 		GroupMap groups;
 		// holds the spatial data structure for the location of the NT and terminal regions
 		std::shared_ptr<Node> location;
-//		GroupLoc LL;  // groups that have a LowerLeft corner at a Location
-//		GroupLoc UR;  // groups that have an upperRight corner at a Location
-	private:
+		// cross reference maps names to uids
+		nameMap    names;
+		uIDType next;
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
 		std::shared_ptr<Node> XMLNode(XMLNodePr&& , const EVector& minVal, int level, nameMap& namesFound);
-		uIDType next;
-		// check groups for a match with currentValue and update the
-		// location if it is there and add a new record to nameMap and
-		// groups if it is not
-		GroupMap::iterator addTerminalToGroups(const EVector& location, std::shared_ptr<NodeValue> currentValue, 
-				     nameMap& nm);
+///****************************************************************************************************
+// *          addNodeValue will just add the NodeValue to the nameMap; if
+//	    there is one there already, this returns the current one and
+//	    discards the nodeValue entered.
+//*   ret:    returns true if the nodeValue is new and nameMap is changed.
+//*****************************************************************************************************/
+
+		GroupType addNodeValue(std::shared_ptr<NodeValue>& nodeValue, nameMap& nm);
+/***************************************************************************************************************
+ *              addNodeTo GroupMap; This adds a new Node to the group Map.  It
+ *              returns an iterator to the list element that holds the node.
+ **************************************************************************************************************/
+		std::list<GroupPair>::iterator addToGroupMap(std::shared_ptr<Node>, const EVector& minLocation, 
+				GroupType expectedNew);
 		// returns a list of Children Nodes ordered according to the splits
 		// The node passed in is the Top level serializable node
 		std::vector<std::shared_ptr<Node>> GetChildren(const std::vector<Efloat>& splits, 
 				EVector::Axis ax, const tinyxml2::XMLNode * parent, const EVector& minVal, 
 				int level, nameMap& namesFound);
+/*************************************************************************************************************
+ * @func  	removeSingles  removes groups that are repeated only once
+ * @params 	[start, last),   First(inclusive), Last[exclusive] ID to search from
+ * ************************************************************************************************************/
+		void removeSingles(uIDType start, uIDType last);
 
 	};
 	tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);

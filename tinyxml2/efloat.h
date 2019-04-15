@@ -4,6 +4,7 @@
 #include <limits>
 //#include <la.h>
 #define NDEBUG
+#include <functional>
 
 
 class Efloat {
@@ -70,7 +71,7 @@ class Efloat {
 	                                   return n * MachineEpsilon/(1 - n * MachineEpsilon);
                 // lessThan means that  a.v < b.v
 		}
-
+		~Efloat();
 #ifndef NDEBUG
 		//  used to pass a long double and to keep a precise copy for debugging
 	        Efloat(float vf, long double ldd, float errf = 0.0f,
@@ -121,7 +122,15 @@ bool operator>=(const Efloat a, const Efloat b);
 // these select the Efloat that produces the min lowerbound or the max upperbound.
 Efloat EMin(const Efloat a, const Efloat b);
 Efloat EMax(const Efloat a, const Efloat b);
-
+/*************************************************************************************
+ *  class EfloatHash produces a hashmap for Efloats
+ *  ********************************************************************************/
+class EfloatHash{
+	public:
+		std::size_t operator()(const Efloat& x);
+	private:
+		std::hash<float> float_hash;
+};
 
 // a vector of Efloats;
 class EVector{
