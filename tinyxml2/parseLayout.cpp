@@ -99,27 +99,33 @@ const EVector&  Layout::BoundBox::size() const
 	       return sizeV;
 }
 
-Layout::Node::Node(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss,
-                                std::vector<std::shared_ptr<Node>>&& cn,
-                                        std::shared_ptr<NodeValue> vd) : size{sz}, 
-				splitDir{sd}, splits{std::move(ss)},
-	                        children{std::move(cn)}, v{vd}
- 
+Layout::Node::Node(const EVector& sz, const EVector::Axis sd, 
+		                std::vector<Efloat>&& ss,
+                                std::vector<std::shared_ptr<Node>>&& cn, 
+				std::weak_ptr<Node> p,
+                                std::shared_ptr<NodeValue> vd) : v{vd},
+					size{sz}, splitDir{sd}, 
+					splits{std::move(ss)},
+	                        	children{std::move(cn)},
+					parent{p}
 {}
 //Layout::Node::Node(){}
 //
 //Layout::Node::Node(std::shared_ptr<NodeValue> vv) : v (vv) {} 
 
-Layout::BranchNode::BranchNode(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss,
+Layout::BranchNode::BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
 					std::vector<std::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> v ):Node(sz, sd, std::move(ss), std::move(cn), v)
+					std::weak_ptr<Node> p, std::shared_ptr<NodeValue> v ):
+					Node(sz, sd, std::move(ss), std::move(cn), p, v)
 {}
 
 //Layout::Node::Node(std::shared_ptr<NodeValue> vv) : v (vv) {} 
 
 Layout::LeafNode::LeafNode(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::vector<std::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> v ):Node(sz, sd, std::move(ss), std::move(cn), v)
+					std::vector<std::shared_ptr<Node>>&& cn,
+					std::weak_ptr<Node>  p
+				std::shared_ptr<NodeValue> v ):
+				Node(sz, sd, std::move(ss), std::move(cn),p, v)
 {}
 /************************************************************************************************************
  * @func      addGroupToXYLocMap.
@@ -147,7 +153,8 @@ Layout::LeafNode::LeafNode(const EVector& sz, EVector::Axis sd, std::vector<Eflo
 // returns a list of Children Nodes ordered according to the splits
 // The node passed in is the Top level serializable node
 std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const std::vector<Efloat>& splits, 
-				EVector::Axis ax, const tinyxml2::XMLNode * parent, const EVector& minVal, 
+				EVector::Axis ax, const tinyxml2::XMLNode * parent, 
+				std::weak_ptr<Node> p, const EVector& minVal, 
 				int level, Layout::nameMap& namesFound)
 {
 	std::vector<std::shared_ptr<Node>> children;
@@ -180,7 +187,7 @@ std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const s
 		std::vector<Efloat>::size_type indx = 0;
 		for (  XMLNodePr& pr : AllXMLNodes)
 		{ 
-			children.push_back(XMLNode(std::move(pr), childMin, level, namesFound));
+			children.push_back(XMLNode(std::move(pr), childMin, p, level, namesFound));
 			if ( indx < splits.size()) {
 				childMin.x = minVal.x + splits[indx++];
 			}
@@ -196,7 +203,7 @@ std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const s
 		std::vector<Efloat>::size_type indx = 0;
 		for ( XMLNodePr& pr : AllXMLNodes)
 		{ 
-			children.push_back(XMLNode(std::move(pr), childMin, level, namesFound));
+			children.push_back(XMLNode(std::move(pr), childMin, p, level, namesFound));
 			if ( indx < splits.size()) {
 				childMin.y = minVal.y + splits[indx++];
 			}
@@ -204,8 +211,8 @@ std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const s
 	}
 	return children;
 }
-std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, const EVector&  minVal, int level, 
-		           Layout::nameMap& namesFound)
+std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, std::weak_ptr<Node> p,
+		         const EVector&  minVal, int level,  Layout::nameMap& namesFound)
 {
 	const tinyxml2::XMLElement* elem = nodePr.first->FirstChildElement("Level");
 	////// params in file but not used:
@@ -261,7 +268,7 @@ std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& node
 		dir = nodePr.first ->FirstChildElement("SplitsY");
 		splits = parseList(dir, minVal.y);
 	}
-	children = GetChildren(splits, splitDir, nodePr.first, minVal, level + 1, namesFound);
+	children = GetChildren(splits, splitDir, nodePr.first, p, minVal, level + 1, namesFound);
 	std::shared_ptr<Node> thisNode;
 	if ( children.size() == 0) {
 		v -> n = 1; // only one Node contained here
@@ -269,9 +276,13 @@ std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& node
 		GroupType  group{ addNodeValue(v, namesFound)};
 		// leaf nodes hold the maps of all the groups that have an
 		// origin at the lower left corner
-		thisNode = std::make_shared<LeafNode>(std::move(size), splitDir, std::move(splits),
-				    std::move(children), v);
-		std::list<GroupPair>::iterator it {addToGroupMap(thisNode, minVal, group)}; 
+		std::shared_ptr<LeafNode> lf = std::make_shared<LeafNode>(std::move(size), splitDir, std::move(splits),
+				    std::move(children), p,  v);
+		std::list<GroupPair>::iterator it {addToGroupMap(lf, minVal, group)};
+		// this adds the node itself as the first group stored in the
+		// Lower Left corner.
+		addGroupToXYLocMap(lf->LL, lf);
+		thisNode = lf;
 	}
 	else {
 		v -> n = 0;
@@ -283,7 +294,7 @@ std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& node
 		}
 		//GroupType  group{ addNodeValue(v, namesFound)};
 		thisNode = std::make_shared<BranchNode>(std::move(size), splitDir, std::move(splits),
-				    std::move(children), v);
+				    std::move(children), p, v);
 		//std::list<GroupPair>::iterator it {addToGroupMap(thisNode, minVal, group)}; 
 	}
 	return thisNode;
@@ -444,25 +455,77 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 }
 
 
+// true if   ll <= d (desired) < ll + size, false otherwise
+bool withinBox (const EVector& ll, const EVector& size, const EVector& d)
+{
+	bool  within { ll.x <= d.x && d.x < ll.x + size.x};
+	within = within && (ll.y <= d.y && d.y < ll.y + size.y);
+	within = within && (ll.z <= d.z && d.z < ll.z + size.z);
+	return within;
+}
 
-/***********************************************************
-	while (SerShape != nullptr)
-	{
-		std::shared_ptr<Layout::Node> node Layout::Node(SerShape, minVal));
-		// find the minimum value of a box
-		Efloat minVal = (ax== EVector::Axis::X) ? node -> bb.min().x: node -> bb.min().y;
-		std::vector<Efloat>::const_iterator loc = 
-			        std::upper_bound(splits.begin(), splits.end(), minVal);
-		IndxType indx =static_cast<IndxType>( loc - splits.begin()); 
-		children[indx] = std::move(node);
-		SerShape = SerShape ->NextSibling();
+/**************************************************************************************************
+ * @func    std::shared_ptr<Node> findLLNode(std::shared_ptr<Node> init, Evector& lowerLeft)
+ * @params[in]    std::shared_ptr<const Node> curr: start Node should be a node
+ * 			in the spatial tree with a valid parent. Should not be
+ * 			a combined node in the groups.
+ *                EVector& ll init location of that node in the
+ *                		spatial structure this will change for each node
+ * 		  EVector&   term the lower left corner that one wants to get to
+ * @params[out]   std::shared_ptr< const Node>  the primitive node with this coordinate or null if no
+ *                        such pointer exists
+ * @brief          will look through the tree starting at the GroupPair, searching up the tree
+ * 		   or down the tree and return the node that has the lowerLeft corner at term
+ ************************************************************************************************/
+std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> curr, EVector& ll, const Evector& term)
+{
+	if (curr == nullptr) {
+		throw std::runtime_error("initial Node is null\n");
 	}
-	// check if all the children have a node:
-	for (const std::unique_ptr<Layout::Node>& oneNode : children)
+	bool within { withinBox(ll, curr->size, term)};
+	//terminal case where either this location is the lower left or is not	
+	if (!within)
 	{
-		if (oneNode == nullptr)
+		if (curr->parent != nullptr && !curr-> parent.expired())
 		{
-			throw std::runtime_error("At Least one Child Node not Found");
-		}
+			return (
+
+	if ( within && curr->v->terminal()) {
+		return (term == ll)? curr: nullptr;
 	}
-*******************************/
+	// within a child find the child
+	else if (within)
+	{
+		EVector::Axis ax = curr->splitDir;
+		Efloat minVal { ( ax == EVector::Axis::X)? : term.x - ll.x: term.y - ll.y};
+		// find the last value that minVal could be inserted and is greater than relativeMin. 
+		// This is the first slit that is greater than the value  and is the correct
+		// function.
+		std::vector<Efloat>::const_iterator it {std::upper_bound( curr->splits.begin(), 
+				 	curr->splits.end(), minVal)};
+		std::vector<Efloat>::value_type indx { it - curr->splits.begin()};
+		// update the lower bound of the new box
+		if (indx != 0)
+		{
+			if ( ax == EVector::Axis::X) {
+				ll.x += curr->splits[indx - 1];
+			}
+			else {
+				ll.y += curr->splits[indx -1];
+			}
+		}
+		// because children have one more element than splits, the indx
+		// is correct for the children vector
+		std::shared_ptr<const Node> child {curr->children[indx]};
+		return findLLNode( child, ll, term);
+	}
+	
+
+
+
+
+
+
+
+
+

@@ -55,12 +55,26 @@ namespace Layout {
  * 	     trees that are found in the facade.  The nodes are roots to trees that represent
  * 	     a unique Structure. This basic structure does not have the extras needed for the
  * 	     spatial structure but does have everything needed for the map.
+ * @params   const EVector& sz   			the 3D size of the Node
+ * 	     const EVector::Axis  sd   			The split axis, generally x or y
+ * 	     std::vector<Efloat>&& ss  			The splits as Efloats
+ * 	     std::vector<std::shared_ptr<Node>>&& cn   	The children of this node
+ * 	     std::weak_ptr<Node>  p    			The parent of this node
+ * 	     						This parent is created
+ * 	     						during the location
+ * 	     						structure and is not
+ * 	     						changed later even when
+ * 	     						this same node is used
+ * 	     						in other groups
+ * 	     std::shared_ptr<NodeValue>  v		The value of this node,
+ * 	     						a name, uid, and n
+ * 	     						terminals within.
  * @Note     The splits now are not redundant and they hold all the position information determined recursively and 
  * 		through several additions.  This way the shared pointers to NodeValue get reused
  * ******************************************************************************/
 	struct Node {
-		Node(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss, 
-				std::vector<std::shared_ptr<Node>>&& cn,
+		Node(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss, 
+				std::vector<std::shared_ptr<Node>>&& cn, std::weak_ptr<Node> p,
 					std::shared_ptr<NodeValue> v); 
 		std::shared_ptr<NodeValue>  v; // the potentially repeated structure
 						// stores all the information of the node
@@ -69,7 +83,10 @@ namespace Layout {
 		EVector::Axis splitDir; // split along x or y
 		std::vector<Efloat> splits;// the location of the splits
 		std::vector<std::shared_ptr<Node>>  children;
+		std::weak_ptr<Node>  parent;
 	};
+
+
 
 /**************************************************************************************************
  * GroupPair is value pair stored in the unordered maps or the hash table 
@@ -97,38 +114,58 @@ namespace Layout {
 	// returns the one mulimap.  That  multimap in stored by ywidth.
 	typedef std::map<const Efloat, YWidth>  XYWidth;
 	// map of all the groups at a location
-//	typedef std::unordered_map< , XYWidth>  GroupLoc;
+	//	typedef std::unordered_map< , XYWidth>  GroupLoc;
 	// map of all the groups at a location
 	typedef std::unordered_map<std::string, uIDType> nameMap; // holds the names of all groups
 	typedef std::pair<uIDType, std::list<EVector>>  SplitGroups; // all the groups that are split by a line
 	enum GroupType {New, Existing};
 
-/* first unsigned holds the id of the unique group, the second holds the pointer to the terminal region
- * in the lower left corner to identify the group location
-
-	typedef std::pair<unsigned, std::weak_ptr<Node>>  GroupPairWk;
-/* BranchNode holds a hash map of group ID and a list of locations of that group that are split by the 
- * splitline
+/* BranchNode is a type of node used for nonTerminal regions with children.  It
+ * has one new container to hold all the groups that would be broken by this
+ * split.  
+ * @Members   std::unordered_set<std::list<GroupPair>::iterator> 
+ * 	       holds an iterator to a GroupPair ( a node and Lower Left
+ * 	       location)
  ******************************************************************************************************/
 	struct BranchNode :Node {
-		        BranchNode(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss,
+		        BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
 					std::vector<std::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> v); 
-			std::unordered_set<std::shared_ptr<Node>> splitGroups;
+					std::weak_ptr<Node> p,
+					std::shared_ptr<NodeValue> v); 
+			std::unordered_set<std::list<GroupPair>::iterator> splitGroups;
 	};
 
 /********************************************************************************************************
  * LeafNode holds the leaf node nodes these store all the groups that have an
  * origin in the lower left corner
+ * @Members      XYWidth LL  all the groups with this terminal share the same LL
+ * 			corner.
+ * *****************************************************************************************************/
  */
-
 	struct LeafNode :Node {
-		        LeafNode(const EVector& sz, EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::vector<std::shared_ptr<Node>>&& cn, 
-				std::shared_ptr<NodeValue> v); 
+		        LeafNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
+					std::vector<std::shared_ptr<Node>>&& cn,
+					std::weak_ptr<Node> p,
+					std::shared_ptr<NodeValue> v); 
 			// stores all the groups organized by lower left corner
 			XYWidth LL;
 	};
+
+/**************************************************************************************************
+ * @func    std::shared_ptr<Node> findLLNode(std::shared_ptr<Node> init, Evector& lowerLeft)
+ * @params[in]    std::shared_ptr<const Node> init: start Node should be a terminal node
+ *                EVector& ll init location of that node in the
+ *                		spatial structure. This will get update for each
+ *                		 as the algorithm traverses the tree.
+ * 		  EVector&   term the lower left corner that one wants to get to
+ * @params[out]   std::shared_ptr< const Node>  the primitive node with this coordinate or null if no
+ *                        such pointer exists
+ * @precondition  initial node exists.
+ * @brief          will look through the tree starting at the GroupPair, searching up the tree
+ * 		   or down the tree and return the node that has the lowerLeft corner at term
+ ************************************************************************************************/
+std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> init, EVector& ll, 
+				const Evector& term);
 /*******************************************************************************************************
  * BottomUp   Holds the data structures for the Bottom up approach.
  *
@@ -150,7 +187,8 @@ namespace Layout {
 		uIDType next;
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
-		std::shared_ptr<Node> XMLNode(XMLNodePr&& , const EVector& minVal, int level, nameMap& namesFound);
+		std::shared_ptr<Node> XMLNode(XMLNodePr&& , std::weak_ptr<Node> p,
+				const EVector& minVal, int level, nameMap& namesFound);
 ///****************************************************************************************************
 // *          addNodeValue will just add the NodeValue to the nameMap; if
 //	    there is one there already, this returns the current one and
@@ -168,7 +206,8 @@ namespace Layout {
 		// returns a list of Children Nodes ordered according to the splits
 		// The node passed in is the Top level serializable node
 		std::vector<std::shared_ptr<Node>> GetChildren(const std::vector<Efloat>& splits, 
-				EVector::Axis ax, const tinyxml2::XMLNode * parent, const EVector& minVal, 
+				EVector::Axis ax, const tinyxml2::XMLNode * parent, 
+				std::weak_ptr<Node> parent, const EVector& minVal, 
 				int level, nameMap& namesFound);
 /*************************************************************************************************************
  * @func  	removeSingles  removes groups that are repeated only once
