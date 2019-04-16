@@ -20,15 +20,27 @@
     <ClInclude Include="vec.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="PrimitiveInstanceNode.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralFacadeCmd.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ProceduralFacade.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrimitiveInstanceNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcedrualFacadeCmd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

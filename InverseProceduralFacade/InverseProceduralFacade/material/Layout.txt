@@ -1,4 +1,4 @@
-wall1 wall1.obj
-wall2 wall2.obj
-window1 window1.obj
-window2 window2.obj
+wall1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/wall1.obj
+wall2 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/wall2.obj
+window1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/window1.obj
+window2 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/window2.obj

@@ -1,0 +1,22 @@
+﻿  PluginMain.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\ProceduralFacadeCmd.h(6): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\PrimitiveInstanceNode.h(8): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  PrimitiveInstanceNode.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\PrimitiveInstanceNode.h(8): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+PrimitiveInstanceNode.cpp(60): warning C4018: '<': signed/unsigned mismatch
+  ProcedrualFacadeCmd.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\ProceduralFacadeCmd.h(6): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  ProceduralFacade.cpp
+ProceduralFacade.cpp(62): warning C4018: '<': signed/unsigned mismatch
+ProceduralFacade.cpp(134): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
+ProceduralFacade.cpp(179): warning C4018: '<': signed/unsigned mismatch
+ProceduralFacade.cpp(199): warning C4018: '<': signed/unsigned mismatch
+ProceduralFacade.cpp(215): warning C4018: '<': signed/unsigned mismatch
+ProceduralFacade.cpp(216): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+ProceduralFacade.cpp(218): warning C4018: '<': signed/unsigned mismatch
+ProceduralFacade.cpp(219): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+ProceduralFacade.cpp(226): warning C4018: '<': signed/unsigned mismatch
+ProceduralFacade.cpp(227): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+ProceduralFacade.cpp(229): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+  vec.cpp
+Foundation.lib(Foundation.dll) : fatal error LNK1112: module machine type 'x64' conflicts with target machine type 'X86'

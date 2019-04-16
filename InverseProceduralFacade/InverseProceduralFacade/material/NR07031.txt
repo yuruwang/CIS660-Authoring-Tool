@@ -1,0 +1,7 @@
+wall1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/custom1.obj
+door1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/custom2.obj
+window1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/custom3.obj
+window2 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/wall1.obj
+window3 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/window1.obj
+window4 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/Window/window.obj
+window5 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/wall2.obj

@@ -1,0 +1,265 @@
+global string $grammarTextFiled;
+global string $widthField;
+global string $heightField;
+global string $depthField;
+
+
+global string $selectedFacadeField;
+global string $selectedFacadePath;
+global string $selectedFacadeName;
+
+global string $materialNames[];
+global string $materialPaths[];
+global int $selectedMaterialIdx;
+global string $facadeMaterialPath;
+
+global proc openMainDialog() {
+    global string $selectedFacadeField;
+    global string $grammarTextFiled;
+    global string $widthField;
+    global string $heightField;
+    global string $depthField;
+    
+    if (`window -exists myWindow`) deleteUI myWindow; 
+
+    window -title "Inverse Procedural Facade Generator" -w 500 myWindow;
+    
+    columnLayout  -adjustableColumn true;
+        frameLayout -label "Generate grammar rules";
+            columnLayout ;
+                rowLayout -numberOfColumns 3;
+                    text -label "Select a facade layout";
+                    $selectedFacadeField = `textField -width 350`;
+                    button -label "browse" -c "browseFacadeLayout";
+                setParent ..;
+                button -label "Create rules" -c "generateGrammarRules";
+            setParent ..;
+        setParent ..; 
+        
+        frameLayout -label "Grammar rules";
+            $grammarTextFiled = `scrollField -wordWrap false -text "" -editable true -height 200`;
+        setParent ..; 
+            
+        frameLayout -label "Procedural facade parameters"; 
+            columnLayout ;
+                rowLayout -numberOfColumns 3;
+                    rowLayout -numberOfColumns 2;
+                        text -label "width";
+                        $widthField = `floatField -value 1 -changeCommand "generateFacadeModel"`;
+                    setParent ..;
+                    rowLayout -numberOfColumns 2;
+                        text -label "height";
+                        $heightField = `floatField -value 1 -changeCommand "generateFacadeModel"`;
+                    setParent ..;
+                    rowLayout -numberOfColumns 2;
+                        text -label "depth";
+                        $depthField = `floatField -value 1 -changeCommand "generateFacadeModel"`;
+                    setParent ..;
+                setParent ..;
+                
+                button -label "Customize primitive geometry" -c "openMaterialsDialog";
+                    
+                button -label "Generate facade model" -c "generateFacadeModel";
+                
+            setParent ..;
+        setParent ..; 
+           
+            
+        
+    setParent ..;
+    
+    showWindow myWindow;
+}
+
+global proc browseFacadeLayout() {
+    fileBrowser("selectFacadeLayout", "Open", "", 0 );
+}
+
+global proc browseMaterial(int $materialIdx) {
+    global int $selectedMaterialIdx;
+    $selectedMaterialIdx = $materialIdx;
+    fileBrowser("selectMaterial", "Open", "", 0 );
+}
+
+global proc selectFacadeLayout(string $filePath, string $fileType) {
+    global string $selectedFacadeField;
+    global string $selectedFacadePath;
+    global string $selectedFacadeName;
+    
+    global string $widthField;
+    global string $heightField;
+    global string $depthField;
+   
+    textField -edit -text $filePath $selectedFacadeField;
+    $selectedFacadePath = $filePath;
+    
+    string $tokenBuffer[];
+    $numOfTokens = `tokenize $selectedFacadePath "//" $tokenBuffer`;
+    string $facadeFileName = $tokenBuffer[$numOfTokens - 1];
+    string $tokenBuffer2[];
+    $numOfTokens2 = `tokenize $facadeFileName "." $tokenBuffer2`;
+    $selectedFacadeName = $tokenBuffer2[0];
+    
+    // read initial size of the facade
+    string $metaPath = "E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/meta/" + $selectedFacadeName + ".txt";
+    $fileId = `fopen $metaPath "r"`;
+    string $tokens[];
+    string $line;
+    
+    $line = `fgetline $fileId` ;
+    tokenize $line " " $tokens;
+    float $width = $tokens[1];
+    floatField -e -value $width $widthField;
+    
+    $line = `fgetline $fileId` ;
+    tokenize $line " " $tokens;
+    float $height = $tokens[1];
+    floatField -e -value $height $heightField;
+    
+    $line = `fgetline $fileId` ;
+    tokenize $line " " $tokens;
+    float $depth = $tokens[1];
+    floatField -e -value $depth $depthField;
+}
+
+global proc selectMaterial(string $filePath, string $fileType) {
+    global int $selectedMaterialIdx;
+    global string $materialPaths[];
+    
+    $materialPaths[$selectedMaterialIdx] = $filePath;  
+    
+    refreshMaterialsTable();  
+}
+
+global proc generateGrammarRules() {
+    // show generated grammar rules of selected facade in the text fiel
+    
+    global string $selectedFacadeName;
+    global string $grammarTextFiled;
+    
+    string $grammarPath = "E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/grammar/" + $selectedFacadeName + ".txt";
+    $fileId = `fopen $grammarPath "r"`;
+    string $grammar;
+    while(!feof($fileId)) {
+        $grammar += `fgetline $fileId`;
+    }
+    
+    scrollField -e -clear $grammarTextFiled;
+    scrollField -e -text $grammar $grammarTextFiled;
+}
+
+global proc generateFacadeModel() {
+    global string $selectedFacadeName;
+    global string $widthField;
+    global string $heightField;
+    global string $depthField;
+    
+    // clear all nodes in the scene
+    select -all;
+    delete;
+
+    float $width = `floatField -q -v $widthField`;
+    float $height = `floatField -q -v $heightField`;
+    float $depth = `floatField -q -v $depthField`;
+    print("selectedFacadeName: " + $selectedFacadeName + "\n");
+    print("width: " + $width + ", height: " + $height + ", depth: " + $depth + "\n");
+    ProceduralFacadeCmd -n $selectedFacadeName -w $width -h $height -d $depth;
+}
+
+global proc closeDialog() {
+    deleteUI materialsWindow;
+}
+
+global proc saveMaterials() {
+    global string $materialNames[];
+    global string $materialPaths[];
+    global string $facadeMaterialPath;
+    
+    $fileId = `fopen $facadeMaterialPath "w"`;
+    for ($i = 0; $i < size($materialNames); $i++) {
+        string $line = $materialNames[$i] + " " + $materialPaths[$i];
+        fprint $fileId ($line+"\n");  
+    }
+    fclose $fileId ;  
+    print("save materials finished....");
+    deleteUI materialsWindow;
+    generateFacadeModel();
+    
+    
+}
+
+global proc refreshMaterialsTable() {
+    global string $materialNames[];
+    global string $materialPaths[];
+    global string $selectedFacadeName;
+    
+    if (`window -exists materialsWindow`) deleteUI materialsWindow; 
+    window -title "Customize Primitives" -w 500 materialsWindow; 
+    columnLayout  -adjustableColumn true;
+        rowLayout -numberOfColumns 2;
+            text -label "Selected Facade: ";
+            textField -text $selectedFacadeName;
+        setParent ..;
+            
+        
+        frameLayout -label "Primitive models";
+        for ($i = 0; $i < size($materialNames); $i++) {
+            rowLayout -numberOfColumns 3;
+                text -label $materialNames[$i] -width 100;
+                string $selectedMaterialField = `textField -text $materialPaths[$i] -width 200`;
+                button -label "browse" -c ("browseMaterial("+$i+")");
+            setParent ..;
+        }
+        setParent ..;
+        rowLayout -numberOfColumns 2;
+            button -label "Save Primitives" -c "saveMaterials";
+            button -label "Cancel" -c "closeDialog";
+        setParent ..;
+    
+    setParent ..;
+    
+    showWindow materialsWindow;
+    print("refreshed materials window...");
+}
+
+global proc openMaterialsDialog() { 
+    global string $selectedFacadePath;
+    global string $selectedFacadeName;
+    global string $facadeMaterialPath;
+    global string $materialNames[];
+    global string $materialPaths[];
+    
+    string $materialFolder = "E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/";
+    $facadeMaterialPath = $materialFolder + $selectedFacadeName + ".txt";
+    $fileId = `fopen $facadeMaterialPath "r"`;
+    string $materialContent;
+    while(!feof($fileId)) {
+        $materialContent += `fgetline $fileId`;
+    }
+    
+    string $materials[];
+    $numOfMaterials = `tokenize $materialContent "\n" $materials`;
+    for ($i = 0; $i < $numOfMaterials; $i++) {
+        string $material = $materials[$i];
+        string $tokens[];
+        tokenize $material " " $tokens;
+        $materialNames[$i] = $tokens[0];
+        $materialPaths[$i] = $tokens[1];
+    }
+    
+    refreshMaterialsTable();
+    
+}
+
+global proc createMenu() {
+    if (`menu -exists myMenu`) {
+        deleteUI myMenu;
+    }
+    
+    global string $gMainWindow;
+    setParent $gMainWindow;
+    menu -l "Inverse Procedural Facade" -to true -aob true myMenu;
+    menuItem -l "Open plugin winodw" -c "openMainDialog"; 
+}
+
+createMenu();

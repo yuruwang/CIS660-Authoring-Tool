@@ -1,0 +1,7 @@
+﻿     Creating library x64\Release\InverseProceduralFacade.lib and object x64\Release\InverseProceduralFacade.exp
+  Generating code
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(173): warning C4715: 'Rule::applyTo': not all control paths return a value
+  All 1464 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  InverseProceduralFacade.vcxproj -> E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\InverseProceduralFacade\x64\Release\InverseProceduralFacade.mll
+  InverseProceduralFacade.vcxproj -> x64\Release\InverseProceduralFacade.pdb (Full PDB)

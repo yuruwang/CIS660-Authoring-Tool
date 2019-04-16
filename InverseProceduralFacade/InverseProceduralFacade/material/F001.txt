@@ -1,0 +1,15 @@
+wall1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+wall2 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+wall3 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+wall4 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+wall5 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+wall6 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+wall7 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+window1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+window2 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+ex_frame1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+in_frame1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+glass1 E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+ledge E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+door E:/CGGT/CIS660/Authoring_tool/MayaPlugin/CIS660-Authoring-Tool/InverseProceduralFacade/InverseProceduralFacade/material/dummy.obj
+
