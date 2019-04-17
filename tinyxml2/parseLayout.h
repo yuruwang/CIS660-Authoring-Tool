@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <map>
 #include <list>
-#include <functional>
 #include "tinyxml2.h"
 namespace Layout {
 /*****************************************************************************************************
@@ -58,7 +57,7 @@ namespace Layout {
  * @params   const EVector& sz   			the 3D size of the Node
  * 	     const EVector::Axis  sd   			The split axis, generally x or y
  * 	     std::vector<Efloat>&& ss  			The splits as Efloats
- * 	     std::vector<std::shared_ptr<Node>>&& cn   	The children of this node
+ * 	     std::vector<std::shared_ptr<Node>>&& cn   	The children of this node not provided to constructor
  * 	     std::weak_ptr<Node>  p    			The parent of this node
  * 	     						This parent is created
  * 	     						during the location
@@ -74,7 +73,7 @@ namespace Layout {
  * ******************************************************************************/
 	struct Node {
 		Node(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss, 
-				std::vector<std::shared_ptr<Node>>&& cn, std::weak_ptr<Node> p,
+				 std::weak_ptr<Node> p,
 					std::shared_ptr<NodeValue> v); 
 		std::shared_ptr<NodeValue>  v; // the potentially repeated structure
 						// stores all the information of the node
@@ -128,11 +127,10 @@ namespace Layout {
  * 	       location)
  ******************************************************************************************************/
 	struct BranchNode :Node {
-		        BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::vector<std::shared_ptr<Node>>&& cn, 
+		        BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss, 
 					std::weak_ptr<Node> p,
 					std::shared_ptr<NodeValue> v); 
-			std::unordered_set<std::list<GroupPair>::iterator> splitGroups;
+			std::vector<std::unordered_set<std::list<GroupPair>::iterator>> splitGroups;
 	};
 
 /********************************************************************************************************
@@ -141,10 +139,8 @@ namespace Layout {
  * @Members      XYWidth LL  all the groups with this terminal share the same LL
  * 			corner.
  * *****************************************************************************************************/
- */
 	struct LeafNode :Node {
 		        LeafNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::vector<std::shared_ptr<Node>>&& cn,
 					std::weak_ptr<Node> p,
 					std::shared_ptr<NodeValue> v); 
 			// stores all the groups organized by lower left corner
@@ -165,7 +161,7 @@ namespace Layout {
  * 		   or down the tree and return the node that has the lowerLeft corner at term
  ************************************************************************************************/
 std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> init, EVector& ll, 
-				const Evector& term);
+				const EVector& term);
 /*******************************************************************************************************
  * BottomUp   Holds the data structures for the Bottom up approach.
  *
@@ -199,15 +195,19 @@ std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> init, EVector
 		GroupType addNodeValue(std::shared_ptr<NodeValue>& nodeValue, nameMap& nm);
 /***************************************************************************************************************
  *              addNodeTo GroupMap; This adds a new Node to the group Map.  It
- *              returns an iterator to the list element that holds the node.
+ *              returns an iterator to the list element that holds the node. 
  **************************************************************************************************************/
 		std::list<GroupPair>::iterator addToGroupMap(std::shared_ptr<Node>, const EVector& minLocation, 
 				GroupType expectedNew);
 		// returns a list of Children Nodes ordered according to the splits
 		// The node passed in is the Top level serializable node
+		// args are the splits, the axis (x or y) ,the xmlnode parent
+		// (for the data), the nodeParent, the minVal postion, the level
+		// int and the nameFound. alot of the arguments are to call
+		// xmlnode on the children
 		std::vector<std::shared_ptr<Node>> GetChildren(const std::vector<Efloat>& splits, 
 				EVector::Axis ax, const tinyxml2::XMLNode * parent, 
-				std::weak_ptr<Node> parent, const EVector& minVal, 
+				std::weak_ptr<Node> nodeParent, const EVector& minVal, 
 				int level, nameMap& namesFound);
 /*************************************************************************************************************
  * @func  	removeSingles  removes groups that are repeated only once
