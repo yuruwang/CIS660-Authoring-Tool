@@ -550,6 +550,34 @@ std::shared_ptr<const Layout::Node> Layout::findLLNode(std::shared_ptr<const Lay
 }
 	
 
+// add nonterminal groups of size n to groupMap
+void Layout::BottomUp::addNTGroups(size_t n)
+{
+	UIDType first {next};
+	for (uIDType u = 0; u < first; u++)
+	{
+		GroupMap::iterator it {groups.find(u)};
+		if (it == groups.end())
+		{
+				continue;
+		}
+		for ( GroupPair& pr : it->second)
+		{
+			EVector neighborLoc { pr.second}
+
+			std::shared_ptr<Node> thisCorner { findLLNode(pr.first, pr.second, pr.second)};
+			neighborLoc.x +=pr.first.size.x;
+			std::shared_ptr<Node> neighbor  {findLLNode(pr.first, pr.second, neighborLoc)};
+			if (neighbor != nullptr)
+				std::cout <<"neighborFound" << std::endl;
+			else
+				std::cout << "No neighbor" << std::endl;
+
+		}
+	}
+}
+
+
 
 
 

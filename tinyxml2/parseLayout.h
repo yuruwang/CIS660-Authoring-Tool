@@ -214,6 +214,12 @@ std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> init, EVector
  * @params 	[start, last),   First(inclusive), Last[exclusive] ID to search from
  * ************************************************************************************************************/
 		void removeSingles(uIDType start, uIDType last);
+/*************************************************************************************************************
+ * addNTGRoups adds nonTerminal groups to group map
+ *    @params [in] numberTerminals  number of terminals to add 
+ */
+		void addNTGroups(size_t numberTerminals);
+
 
 	};
 	tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);
