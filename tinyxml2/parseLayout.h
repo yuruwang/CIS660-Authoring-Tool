@@ -106,9 +106,10 @@ namespace Layout {
 	// GroupMap holds a hashtable of uIDTypes and a list of Group Pairs
 	// Each groupPair has the same NodeValue but a different Node itself.
 	typedef std::unordered_map<uIDType, List> GroupMap;
-	// stores Groups indexed by their YWidth.  For the same YWidth there may be 
-	// multiple groups
-	typedef std::multimap<const Efloat, std::weak_ptr<Node> > YWidth;
+	// stores Groups indexed by their YWidth.  The YWidth is already grouped
+	// by Xwidth. At one location there should only be one group that has
+	// the same X and Y width.  Hence this is a map, not a multimap
+	typedef std::map<const Efloat, std::weak_ptr<const Node> > YWidth;
 	// first Efloat has Groups ordered by XWidth.  Given a X width, it
 	// returns the one mulimap.  That  multimap in stored by ywidth.
 	typedef std::map<const Efloat, YWidth>  XYWidth;
@@ -145,6 +146,15 @@ namespace Layout {
 					std::shared_ptr<NodeValue> v); 
 			// stores all the groups organized by lower left corner
 			XYWidth LL;
+/************************************************************************************************************
+ * @func      addGroupToXYLocMap.
+ * @args      std::shared_ptr<const Node> groupNode
+ * @brief     will add an entry to the map or create an entry if need be.
+ * 		returns true if the add was successful.  returns false if there
+ * 		is already a group of the same X, Y width. (meaning do not add).
+ * 		There should only be one group with the same XYWidth.
+ * ****************************************************************************************************/
+			std::pair<bool, bool> addGroupToXYLocMap(std::shared_ptr<const Node> inNode);
 	};
 
 /**************************************************************************************************
@@ -215,10 +225,28 @@ std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> init, EVector
  * ************************************************************************************************************/
 		void removeSingles(uIDType start, uIDType last);
 /*************************************************************************************************************
- * addNTGRoups adds nonTerminal groups to group map
- *    @params [in] numberTerminals  number of terminals to add 
- */
-		void addNTGroups(size_t numberTerminals);
+ * @func      addNTGroups adds Non-terminal Groups to the GroupMap.  It goes
+ * 		through every group in the groupMap and builds nodes that have nTerm terminal regions.  Each pass adds
+ * 		all groups that have a total of nTerms.  
+ * @params[in]  nTerms.  The number of terminals in the built up group. If a
+ * 		group has 3 terminals and nTerms is 5, this would add only
+ * 		groups that have 2 terminals.
+ * @precondition:  all lower groups have already been built up.  In
+ * 		example above all repeated groups of 3 and 2 are already in the
+ * 		map.
+ * @brief       Groups are a concatenation of two groups with the same ywidth or
+ * 		xwidth.  In order to build up all the possible 3 element groups,
+ * 		the 2 element groups have to be built; without that you may miss
+ * 		some groups.  For higher N elements, there may be more than one 
+ * 		way to build up the same group, for example it could be a 4 and
+ * 		1 or a 3 and 2. We don't want multiple copies of the same group,
+ * 		so whichever way is built first will get an entry in the LL
+ * 		table of the terminal nodes. There is at most one group with the
+ * 		same LL coordinate and same XWidth and YWidth and the same
+ * 		number of terminals.  If a duplicate is created that will not be
+ * 		added to the groupMap.
+ *****************************************************************************************************************/
+		void addNTGroups(size_t nTerms);
 
 
 	};

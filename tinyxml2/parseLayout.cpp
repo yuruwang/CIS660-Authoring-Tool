@@ -125,24 +125,68 @@ Layout::LeafNode::LeafNode(const EVector& sz, const EVector::Axis sd, std::vecto
 {}
 /************************************************************************************************************
  * @func      addGroupToXYLocMap.
- * @args      XYWidth& map, std::shared_ptr<Node> groupNode
+ * @args[in]  std::shared_ptr<const Node> groupNode
+ * @return[out]  bool pair.  first is whether new group was inserted or not;
+ *                           second is whether there was an old group there that
+ *                           was expired.
  * @brief     will add an entry to the map or create an entry if need be.
+ * 		returns true if the add was successful.  returns false if there
+ * 		is already a group of the same X, Y width that has not expired
+ * 		(meaning do not add).
+ * 		There should only be one group with the same XYWidth.  
+ * 		If the new group matches the old one, this will keep the old.
+ * 		The prior does not have to be eliminated with a call because if
+ * 		it is deleted in the GroupMap it will be expired here.
+ * 		
  * ****************************************************************************************************/
- void addGroupToXYLocMap(Layout::XYWidth& map, const std::shared_ptr<Layout::Node> inNode)
+std::pair<bool, bool> Layout::LeafNode::addGroupToXYLocMap(std::shared_ptr<const Node> inNode)
 {
-	Layout::XYWidth::iterator  XYit {map.find(inNode->size.x)};
+	XYWidth::iterator  XYit {LL.find(inNode->size.x)};
+	std::pair<bool, bool>  pr { false, false};
 	// x found
-	bool found = XYit != map.end();
-	if (!found) {
-		 std::pair<Layout::XYWidth::iterator, bool> success{
-			 map.insert(std::pair<Efloat, Layout::YWidth>(inNode->size.x, Layout::YWidth()))};
+	pr.first = (XYit != LL.end());
+	// if x is not found make sure there is a x entry with a map. Ymap
+	// inserted. Node is not inserted yet!
+	if (!pr.first) {
+		 std::pair<XYWidth::iterator, bool> success{
+			 LL.insert(std::pair<Efloat, YWidth>(inNode->size.x, YWidth()))};
 		 if (!success.second) {
 			throw std::runtime_error("failed to insert in XYWidth Map");
 		 }
 		 XYit = success.first;
 	}
-	// insert the node in the map
-	XYit->second.insert(std::make_pair(inNode->size.y, inNode));
+	YWidth::iterator Yit { XYit -> second.find(inNode->size.y)};
+	// pr.first true means there is already a group with the same location and the
+	// same X and Y size.  This should be a duplicate group. check its
+	// number of elements. 
+	// pr.second means a match was found and it expired. Must have been
+	// deleted by the groupMap owner.
+	pr.first =  Yit != XYit -> second.end();
+	if (pr.first) {
+		pr.second = Yit->second.expired();
+	}
+	//found and prior did not expire no need to replace but check nTerms 
+	if (pr.first && !pr.second)
+	{
+		// if expired, it means that there was a single group that was
+		// not repeated. check if n terminals the same
+		std::shared_ptr<const Node> foundVal { Yit -> second.lock()};
+		if (inNode -> v -> n != foundVal -> v -> n)
+		{
+			throw std::runtime_error("Two groups with the same size have different"
+					"numbers of primitives");
+		}
+		return pr;
+	}
+	// either not found or found and expired. replace group there.
+	std::pair<YWidth::iterator, bool> success {XYit->second.insert(
+			          std::make_pair(inNode->size.y, inNode))};
+	pr.first = success.second;
+	if (!pr.first)
+	{
+		throw std::runtime_error("Allocation error. new group not added");
+	}
+	return pr;
 }
 
 
@@ -275,7 +319,11 @@ std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& node
 		std::list<GroupPair>::iterator it {addToGroupMap(lf, minVal, group)};
 		// this adds the node itself as the first group stored in the
 		// Lower Left corner.
-		addGroupToXYLocMap(lf->LL, lf);
+		std::shared_ptr<const LeafNode> clf = std::const_pointer_cast<const LeafNode>(lf);
+		std::pair<bool, bool> val{ lf ->addGroupToXYLocMap(clf)};
+		if (val.first == false || val.second == true) {
+			throw std::runtime_error("New Terminal not inserted in XYLocMap");
+		}
 		thisNode = lf;
 	}
 	else {
@@ -553,7 +601,7 @@ std::shared_ptr<const Layout::Node> Layout::findLLNode(std::shared_ptr<const Lay
 // add nonterminal groups of size n to groupMap
 void Layout::BottomUp::addNTGroups(size_t n)
 {
-	UIDType first {next};
+	uIDType first {next};
 	for (uIDType u = 0; u < first; u++)
 	{
 		GroupMap::iterator it {groups.find(u)};
@@ -561,13 +609,16 @@ void Layout::BottomUp::addNTGroups(size_t n)
 		{
 				continue;
 		}
+		// TODO find the number of terms in group and figure
+		//       out what number of terms you need in the neighbors
 		for ( GroupPair& pr : it->second)
 		{
-			EVector neighborLoc { pr.second}
-
-			std::shared_ptr<Node> thisCorner { findLLNode(pr.first, pr.second, pr.second)};
-			neighborLoc.x +=pr.first.size.x;
-			std::shared_ptr<Node> neighbor  {findLLNode(pr.first, pr.second, neighborLoc)};
+			EVector neighborLoc { pr.second};
+			std::shared_ptr<const Node> groupNode 
+					{std::const_pointer_cast<const Node>(pr.first)};
+			std::shared_ptr<const Node> thisCorner { findLLNode(groupNode, pr.second, pr.second)};
+			neighborLoc.x +=pr.first -> size.x;
+			std::shared_ptr<const Node> neighbor  {findLLNode(groupNode, pr.second, neighborLoc)};
 			if (neighbor != nullptr)
 				std::cout <<"neighborFound" << std::endl;
 			else
