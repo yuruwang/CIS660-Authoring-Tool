@@ -189,6 +189,119 @@ std::pair<bool, bool> Layout::LeafNode::addGroupToXYLocMap(std::shared_ptr<const
 	return pr;
 }
 
+/****************************************************************************************************
+ * @function  list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat
+ * 		size)
+ * @params[in]    ax is either X or Y, the axis to look for;
+ *                size is the size to match to, 
+ *               if n is there then 
+ *                n    is the number of terminals to match to
+ * @params[out]   list<std::weak_ptr<const Node>>  the list of weak_ptrs to
+ * Nodes that match.
+ * ****************************************************************************************************/
+std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width, unsigned n)
+{
+	std::list<std::shared_ptr<const Node>> list;
+	if (ax == EVector::Axis::X) { 
+		XYWidth::iterator  XYit { LL.find(width)};
+		if (XYit == LL.end())
+		{
+			return list;
+		}
+		for (YWidth::iterator curr {XYit -> second.begin()}; 
+				   curr < XYit -> second.end(); ++curr)
+		{
+			if (curr->second.expired()){
+				throw std::runtime_error("Expired Group in Location Map");
+			}
+			std::shared_ptr<Node> ptr {curr ->second.lock()};
+			std::shared_ptr<const Node> cptr { std::const_ptr_cast<const Node>(ptr)};
+			// number match
+			if ( cptr -> v -> n == n) {
+				list.push_back(cptr);
+			}
+		}
+	}
+	else // Y Axis
+	{ 
+		for (XYWidth::iterator curr { LL.begin()} ; curr < LL.end(); ++curr)
+		{
+
+			YWidth::iterator  Yit { curr -> second.find(width)};
+			if (Yit != curr -> second.end())
+			{
+				if (Yit ->second.expired()){
+					throw std::runtime_error("Expired Group in Location Map");
+				}
+				std::shared_ptr<Node> ptr {Yit ->second.lock()};
+				std::shared_ptr<const Node> cptr { std::const_`ptr_cast<const Node>(ptr)};
+				if ( cptr -> v -> n == n) {
+					list.push_back(cptr);
+				}
+			}
+		}
+	}
+	return list;
+}
+std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width)
+{
+	std::list<std::shared_ptr<const Node>> list;
+	if (ax == EVector::Axis::X) { 
+		XYWidth::iterator  XYit { LL.find(width)};
+		if (XYit == LL.end())
+		{
+			return list;
+		}
+		for (YWidth::iterator curr {XYit -> second.begin()}; 
+				   curr < XYit -> second.end(); ++curr)
+		{
+			if (curr->second.expired()){
+				throw std::runtime_error("Expired Group in Location Map");
+			}
+			std::shared_ptr<Node> ptr {curr ->second.lock()};
+			std::shared_ptr<const Node> cptr { std::const_ptr_cast<const Node>(ptr)};
+			list.push_back(cptr);
+		}
+	}
+	else // Y Axis
+	{ 
+		for (XYWidth::iterator curr { LL.begin()} ; curr < LL.end(); ++curr)
+		{
+			YWidth::iterator  Yit { curr -> second.find(width)};
+			if (Yit != curr -> second.end())
+			if (Yit ->second.expired()){
+				throw std::runtime_error("Expired Group in Location Map");
+			}
+			std::shared_ptr<Node> ptr {Yit ->second};
+			std::shared_ptr<const Node> cptr { std::const_ptr_cast<const Node>(ptr)};
+			list.push_back(cptr);
+		}
+	}
+	return list;
+}
+
+/******************************************************************************************************
+ * bool removeFromXYLocMap will remove a Node from the XY map.  It should be
+ * found.  returns true if found and removed successfully */
+bool Layout::Node::removeFromXYLocMap(std::shared_ptr<const Node> inNode)
+{
+	if (inNode == nullptr){
+		return false;
+	}
+	XYWidth::iterator XYit { LL.find(inNode->size.x};
+	if (XYit == LL.end()){
+	 	throw std::runtime_error("No node with that X width found");
+	}
+	YWidth::iterator Yit { XYit -> second.find(size.y)};
+	if (Yit == XYit ->second.end()){
+		throw std::runtime_error("No Node with Y Width");
+	}
+	XYit ->second.erase(Yit);
+	if XYit ->second.size() == 0){
+		LL.erase(XYit);
+	}
+	return true;
+}
 
 // returns a list of Children Nodes ordered according to the splits
 // The node passed in is the Top level serializable node
@@ -234,7 +347,8 @@ std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const s
 		}
 
 	}
-	else { 
+	else 
+	{ 
 		std::sort(AllXMLNodes.begin(), AllXMLNodes.end(), 
 				[] (XMLNodePr& a, 
 					XMLNodePr& b) -> bool {
@@ -472,6 +586,8 @@ Layout::BottomUp::BottomUp( const char * filename): next{0}
 
 		EVector leftCorner(0, 0, 0);
 		location = XMLNode(std::move(pr), std::weak_ptr<Node>(), leftCorner, 0, names);
+		removeSingles(0, next);
+		addNTGroups(2);
 }
 
 /*************************************************************************************************************
@@ -485,7 +601,7 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		GroupMap::iterator itGroup  {groups.find(current)};
 		bool found = itGroup != groups.end();
 		// Node should not be in the group;
-		if (found && itGroup -> second.size() > 0) {
+		if (found && itGroup -> second.size() == 1) {
 		    ListIterator itList = itGroup -> second.begin();
 		    nameMap::iterator  nameit = names.find(itList -> first-> v -> name);
 		    if (nameit == names.end())
@@ -599,7 +715,7 @@ std::shared_ptr<const Layout::Node> Layout::findLLNode(std::shared_ptr<const Lay
 	
 
 // add nonterminal groups of size n to groupMap
-void Layout::BottomUp::addNTGroups(size_t n)
+void Layout::BottomUp::addNTGroups(size_t in)
 {
 	uIDType first {next};
 	for (uIDType u = 0; u < first; u++)

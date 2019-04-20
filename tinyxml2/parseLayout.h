@@ -117,7 +117,6 @@ namespace Layout {
 	//	typedef std::unordered_map< , XYWidth>  GroupLoc;
 	// map of all the groups at a location
 	typedef std::unordered_map<std::string, uIDType> nameMap; // holds the names of all groups
-	typedef std::pair<uIDType, std::list<EVector>>  SplitGroups; // all the groups that are split by a line
 	enum GroupType {New, Existing};
 
 /* BranchNode is a type of node used for nonTerminal regions with children.  It
@@ -148,13 +147,37 @@ namespace Layout {
 			XYWidth LL;
 /************************************************************************************************************
  * @func      addGroupToXYLocMap.
- * @args      std::shared_ptr<const Node> groupNode
+ * @args[in]  std::shared_ptr<const Node> groupNode
+ * @return[out]  bool pair.  first is whether new group was inserted or not;
+ *                           second is whether there was an old group there that
+ *                           was expired.
  * @brief     will add an entry to the map or create an entry if need be.
  * 		returns true if the add was successful.  returns false if there
- * 		is already a group of the same X, Y width. (meaning do not add).
- * 		There should only be one group with the same XYWidth.
+ * 		is already a group of the same X, Y width that has not expired
+ * 		(meaning do not add).
+ * 		There should only be one group with the same XYWidth.  
+ * 		If the new group matches the old one, this will keep the old.
+ * 		The prior does not have to be eliminated with a call because if
+ * 		it is deleted in the GroupMap it will be expired here.
+ * 		
  * ****************************************************************************************************/
 			std::pair<bool, bool> addGroupToXYLocMap(std::shared_ptr<const Node> inNode);
+/******************************************************************************************************
+ * bool removeFromXYLocMap will remove a Node from the XY map.  It should be
+ * found.  returns true if found and removed successfully */
+			bool removeFromXYLocMap(std::shared_ptr<const Node> inNode);
+/****************************************************************************************************
+ * @function  list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat
+ * 		size)
+ * @params[in]    ax is either X or Y, the axis to look for;
+ *                size is the size to match to, 
+ *               if n is there then 
+ *                n    is the number of terminals to match to
+ * @params[out]   list<std::weak_ptr<const Node>>  the list of weak_ptrs to
+ * Nodes that match.
+ * ****************************************************************************************************/
+std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width, unsigned n);
+
 	};
 
 /**************************************************************************************************
