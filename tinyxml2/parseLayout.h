@@ -83,6 +83,7 @@ namespace Layout {
 		std::vector<Efloat> splits;// the location of the splits
 		std::vector<std::shared_ptr<Node>>  children;
 		std::weak_ptr<Node>  parent;
+		virtual ~Node() {}
 	};
 
 
@@ -100,12 +101,18 @@ namespace Layout {
 	// 		parameter is the Lower Left start location.
 	typedef std::pair<std::shared_ptr<Node>, EVector>  GroupPair;
 	// List is list of Group Pairs;
-	typedef std::list<GroupPair>   List;
+	typedef std::pair<std::weak_ptr<Node>, EVector>  WeakPair;
+	// List is list of Group Pairs;
+	//typedef std::list<GroupPair>   List;
 	// ListIterator is the iterator to traverse the linked list;
-	typedef  List::iterator  ListIterator;
-	// GroupMap holds a hashtable of uIDTypes and a list of Group Pairs
+	//typedef  List::iterator  ListIterator;
+	// GroupMap holds a hashtable of uIDTypes and a Group Pairs
 	// Each groupPair has the same NodeValue but a different Node itself.
-	typedef std::unordered_map<uIDType, List> GroupMap;
+	typedef std::unordered_multimap<uIDType, GroupPair> GroupMap;
+	// WeakMap holds a hashtable of uIDTypes and a Group Pairs
+	// Each groupPair has the same NodeValue but a different Node itself.
+	typedef std::pair<GroupMap::const_iterator, GroupMap::const_iterator> GroupMapIt; 
+	typedef std::unordered_multimap<uIDType, WeakPair> WeakMap;
 	// stores Groups indexed by their YWidth.  The YWidth is already grouped
 	// by Xwidth. At one location there should only be one group that has
 	// the same X and Y width.  Hence this is a map, not a multimap
@@ -130,7 +137,7 @@ namespace Layout {
 		        BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss, 
 					std::weak_ptr<Node> p,
 					std::shared_ptr<NodeValue> v); 
-			std::vector<std::unordered_set<std::list<GroupPair>::iterator>> splitGroups;
+			std::vector<WeakMap> splitGroups;
 	};
 
 /********************************************************************************************************
@@ -176,8 +183,8 @@ namespace Layout {
  * @params[out]   list<std::weak_ptr<const Node>>  the list of weak_ptrs to
  * Nodes that match.
  * ****************************************************************************************************/
-std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width, unsigned n);
-
+		std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width, unsigned n);
+		std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width);
 	};
 
 /**************************************************************************************************
@@ -193,8 +200,13 @@ std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat wi
  * @brief          will look through the tree starting at the GroupPair, searching up the tree
  * 		   or down the tree and return the node that has the lowerLeft corner at term
  ************************************************************************************************/
-std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> init, EVector& ll, 
+	std::shared_ptr<LeafNode> findLLNode(std::shared_ptr<Node> init, EVector& ll, 
 				const EVector& term);
+
+// provide a child and an absolute LL coordinate, and this finds the lower left
+// coordinate of the parent.
+	EVector   parentLLCorner(std::shared_ptr<const  Layout::Node> parent, std::shared_ptr<const Layout::Node> child, 
+				EVector& minValueChild);
 /*******************************************************************************************************
  * BottomUp   Holds the data structures for the Bottom up approach.
  *
@@ -230,7 +242,7 @@ std::shared_ptr<const Node> findLLNode(std::shared_ptr<const Node> init, EVector
  *              addNodeTo GroupMap; This adds a new Node to the group Map.  It
  *              returns an iterator to the list element that holds the node. 
  **************************************************************************************************************/
-		std::list<GroupPair>::iterator addToGroupMap(std::shared_ptr<Node>, const EVector& minLocation, 
+		GroupMap::const_iterator addToGroupMap(std::shared_ptr<Node>, const EVector& minLocation, 
 				GroupType expectedNew);
 		// returns a list of Children Nodes ordered according to the splits
 		// The node passed in is the Top level serializable node
