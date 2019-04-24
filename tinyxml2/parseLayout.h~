@@ -125,12 +125,6 @@ namespace Layout {
 	// map of all the groups at a location
 	typedef std::unordered_map<std::string, uIDType> nameMap; // holds the names of all groups
 	enum GroupType {New, Existing};
-	// for add toXYLocMAP returns
-	// Old :  There was an old group there already no Not inserted
-	// New :  New Group inserted
-	// NewExpired: Old group was expired new added over it.
-	// Fail: Failed to insert Group
-	enum InsertType {OldNode, NewNode, NewExpired, Fail}; 
 
 /* BranchNode is a type of node used for nonTerminal regions with children.  It
  * has one new container to hold all the groups that would be broken by this
@@ -161,8 +155,9 @@ namespace Layout {
 /************************************************************************************************************
  * @func      addGroupToXYLocMap.
  * @args[in]  std::shared_ptr<const Node> groupNode
- * @return[out]  InsertType tells if there was a matching Node there or not.
- *                Whether to insert the new Node
+ * @return[out]  bool pair.  first is whether new group was inserted or not;
+ *                           second is whether there was an old group there that
+ *                           was expired.
  * @brief     will add an entry to the map or create an entry if need be.
  * 		returns true if the add was successful.  returns false if there
  * 		is already a group of the same X, Y width that has not expired
@@ -173,7 +168,7 @@ namespace Layout {
  * 		it is deleted in the GroupMap it will be expired here.
  * 		
  * ****************************************************************************************************/
-			InsertType addGroupToXYLocMap(std::shared_ptr<const Node> inNode);
+			std::pair<bool, bool> addGroupToXYLocMap(std::shared_ptr<const Node> inNode);
 /******************************************************************************************************
  * bool removeFromXYLocMap will remove a Node from the XY map.  It should be
  * found.  returns true if found and removed successfully */
