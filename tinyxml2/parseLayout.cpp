@@ -598,7 +598,14 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		GroupMapIt pr{ groups.equal_range(current) };
 		GroupMap::size_type t = static_cast<GroupMap::
 			size_type>(std::distance(pr.first, pr.second));
-		if (t == 1) {
+		if (pr.first == groups.end()) {
+			// no elements found
+			continue;
+		}
+		GroupMap::const_iterator second = pr.first;
+		++second;
+		// one element so delete
+		if (second == pr.second) {
 			if (pr.first == groups.end()) {
 				throw std::runtime_error("No groups found when there should have been 1 found");
 			}
