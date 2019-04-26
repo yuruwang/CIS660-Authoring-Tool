@@ -101,7 +101,13 @@ namespace Layout {
 	// 		parameter is the Lower Left start location.
 	typedef std::pair<std::shared_ptr<Node>, EVector>  GroupPair;
 	// List is list of Group Pairs;
-	typedef std::pair<std::weak_ptr<Node>, EVector>  WeakPair;
+	typedef std::pair<std::weak_ptr<const Node>, EVector>  WeakPair;
+	//childIT  is an iterator over the children of a Node
+	typedef std::vector<std::shared_ptr<Node>>::const_iterator ChildIt;
+	typedef  std::pair<ChildIt, ChildIt>  ChildItPair; 
+	//splitIT  is an iterator over the splits in a Node
+	typedef std::vector<Efloat>::const_iterator SplitIt;
+	typedef  std::pair<SplitIt, SplitIt>  SplitItPair; 
 	// List is list of Group Pairs;
 	//typedef std::list<GroupPair>   List;
 	// ListIterator is the iterator to traverse the linked list;
@@ -144,6 +150,12 @@ namespace Layout {
 					std::weak_ptr<Node> p,
 					std::shared_ptr<NodeValue> v); 
 			std::vector<WeakMap> splitGroups;
+			// adds a WeakPair to the group;
+			// throws exception if expired group or failure
+			void addGroup(WeakPair group);
+			// removes a group from the branchNode
+			// throws exception if group not found
+			bool removeGroup(WeakPair group);
 	};
 
 /********************************************************************************************************
@@ -193,13 +205,20 @@ namespace Layout {
 	};
 
 /**************************************************************************************************
- * @func    std::shared_ptr<Node> findLLNode(std::shared_ptr<Node> init, Evector& lowerLeft)
- * @params[in]    std::shared_ptr<const Node> init: start Node should be a terminal node
+ * @func    std::shared_ptr<Node> findLLNode(std::shared_ptr<Node> init, Evector& lowerLeft, 
+ * 				const EVector& term)
+ * @params[in]    std::shared_ptr<const Node> init: start Node. If it is a terminal node then you
+ * 			can navigate the location KD tree and go up and down.
+ * 			If it is a groupNode in the KD tree then you also can go
+ * 			up and down.  It can also be used to find the Lower Left
+ * 			corner of a group node. In this case the lowerleft and
+ * 			term should be the same.
  *                EVector& ll init location of that node in the
- *                		spatial structure. This will get update for each
+ *                		spatial structure. This will get updated for each call up and down, so
+ *                		will get modified
  *                		 as the algorithm traverses the tree.
- * 		  EVector&   term the lower left corner that one wants to get to
- * @params[out]   std::shared_ptr< const Node>  the primitive node with this coordinate or null if no
+ * 		  const EVector&   term the lower left corner that one wants to get to
+ * @params[out]   std::shared_ptr< const Node>  the terminal node with this coordinate or null if no
  *                        such pointer exists
  * @precondition  initial node exists.
  * @brief          will look through the tree starting at the GroupPair, searching up the tree
@@ -212,6 +231,38 @@ namespace Layout {
 // coordinate of the parent.
 	EVector   parentLLCorner(std::shared_ptr<const  Layout::Node> parent, std::shared_ptr<const Layout::Node> child, 
 				EVector& minValueChild);
+
+/*******************************************************************************************************
+ *   bool sameGroup(std::shared_ptr<const Node> a, std::shared_ptr<const Node>
+ *   		b) determines if the groups should be considered the same.  That means
+ *   		they either have one terminal and that terminal has the same UID or that
+ *   		the group is composed of two groups each  have all subgroups
+ *   @params[in]  std::shared_ptr<const Node> a, b  the two groups to compare
+ *   @return     bool true if they are the same
+ *   @brief      if both terminal compares uid for similarity, If both not
+ *   		  terminal does not compare uid of the a, b but rather compares
+ *   		  uid of all the children.  When groups are being formed from
+ *   		  other groups, the identity of the children is already set.
+ *   		  This will then determine if a new group is really like a
+ *   		  previous group found or not.
+ ****************************************************************************************************/
+	bool sameGroup(std::shared_ptr<const Node> a, std::shared_ptr<const Node> b);
+/****************************************************************************************************
+ * @func   makeParentGroup makes a parent GroupPair out of a vector of children
+ * 	   GroupPairs.  The Children altogether should form a rectangle
+ * 	   contiguous in one dimension and all the same in the other. 
+ * @param[in]  std::vector<GroupPair>  children.  the contiguous children
+ *             EVector::Axis           splitdir.  The direction of the splits
+ *             string                  name       optional name supplied
+ * @return    a  GroupPar with all the children together
+ * @brief     This creates a ValueNode for the shared group but does not add it
+ * 	      to any structures.  It sets the uid = -1.  Id does count the
+ * 	      terminals in the children and provide a correct count of
+ * 	      terminals.  It does not alter the children in any way and does not
+ * 	      reset the children's parents
+ * **************************************************************************************************/
+	   GroupPair makeParentGroup(const std::vector<GroupPair> children, EVector::Axis splitDir, 
+			    std::string name = "unlabeled");   
 /*******************************************************************************************************
  * BottomUp   Holds the data structures for the Bottom up approach.
  *
