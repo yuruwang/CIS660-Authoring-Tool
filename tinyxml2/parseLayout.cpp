@@ -107,16 +107,266 @@ Layout::Node::Node(const EVector& sz, const EVector::Axis sd,
 					splits{std::move(ss)},
 					parent{p}
 {}
-//Layout::Node::Node(){}
-//
-//Layout::Node::Node(std::shared_ptr<NodeValue> vv) : v (vv) {} 
 
 Layout::BranchNode::BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
 					std::weak_ptr<Node> p, std::shared_ptr<NodeValue> v ):
 					Node(sz, sd, std::move(ss),  p, v)
 {}
+typedef   std::pair<Efloat, Efloat> minMaxPr;
 
-//Layout::Node::Node(std::shared_ptr<NodeValue> vv) : v (vv) {} 
+// strictly Overlap is true only if a and b share common points that are not on
+// the boundary
+bool  strictlyOverlap( const minMaxPr a, const minMaxPr b)
+{
+	bool overlaps {a.first < b.second &&  b.first < a.second};
+	overlaps = overlaps || (b.first < a.second && a.first < b.second);
+	return overlaps;
+}
+
+// strictly Overlap is true only if b falls within a and is not on
+// the boundary
+bool  strictlyOverlap( const minMaxPr a, const Efloat b)
+{
+	bool overlaps {a.first < b &&  b < a.second};
+	return overlaps;
+}
+// containedWithin  is true if b is contained within a. They can share a
+// boundary.
+bool  containedWithin(const minMaxPr a, const minMaxPr b)
+{
+	bool overlaps {a.first <= b.first &&  b.second <= a.second};
+	return overlaps;
+}
+/* LineIntersects tests if a splitLine within a spatialLocation Node splits a
+   group. The group has a non zero width and a height. It also tests whether a childNode is overlapping with the group,
+   where the group is within the location  and wether there are any overlaps at all*/
+ 
+class LineIntersects {
+	private:
+		// minMap x, y dimensions of spatial Node bounding box
+		const minMaxPr xLocPr, yLocPr;
+		// axis of GroupNode
+		const EVector::Axis splitDir;
+		// the size of the group  Node
+		// group lowerLeft;
+		const bool expired;
+		// minMax pairs of the group Node
+		const minMaxPr xGroup, yGroup, currentGroup;
+	public:
+		// initialize all variables
+		LineIntersects(Layout::GroupPair loc, Layout::WeakPair group):
+			 xLocPr { minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x)}, 
+			 yLocPr { minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y)},
+			 splitDir { loc.first -> splitDir},
+			 expired { group.first.expired()},
+			 xGroup { (expired)? minMaxPr(Efloat(), Efloat()) : 
+		           minMaxPr(group.second.x, group.second.x + group.first.lock() -> size.x)},
+			 yGroup { (expired)? minMaxPr(Efloat(), Efloat()) : 
+		           minMaxPr(group.second.y, group.second.y + group.first.lock() -> size.y)},
+		         currentGroup { (splitDir == EVector::Axis::X) ?  xGroup:yGroup}
+			{}
+		// Given the size of the spatial Location Node, will determine
+		// in any lines within this node could possible be splitlines
+		bool anyOverlaps() const
+		{
+		    bool Overlaps {strictlyOverlap(xLocPr, xGroup)};
+		    Overlaps = Overlaps && strictlyOverlap(yLocPr, yGroup);
+		    return Overlaps;
+		}
+		// provide the size of the location and this will return true
+		// if the group is contained within location.  If it not within
+		// the location then one needs to look to the parent
+		bool groupWithinLocation() const 
+		{
+		    bool Overlaps {containedWithin(xLocPr, xGroup)};
+		    Overlaps = Overlaps && containedWithin(yLocPr, yGroup);
+		    return Overlaps;
+		}
+		// used to get whether a child node
+		bool operator()(const minMaxPr pr) const 
+		{
+			return strictlyOverlap(pr, currentGroup);
+		}
+		bool operator()(const Efloat& splitLine) const
+		{
+			if (splitDir == EVector::Axis::X)
+			{
+				return strictlyOverlap(xGroup, xLocPr.first + splitLine);
+			}
+			else{
+				return strictlyOverlap(yGroup, yLocPr.first + splitLine);
+			}
+		}
+};
+// LineSegment encodes a line segment that would be part of a split line.
+// An important observation is that the splitlines that divide groups are never
+// on the bounding box, they are always 
+struct LineSegment {
+	minMaxPr  pr; // min and max values of the line say ymin, ymax.
+	Efloat transverseVal; // the one transverse value say x.
+	EVector::Axis  ax;  // the direction of min, max, say Y
+};
+/* LineOverlapsLine tests if a splitLVine is within a spatialLocation 
+   group. The group has a non zero width and a height. It also tests whether a childNode is overlapping with the group,
+   where the group is within the location  and wether there are any overlaps at all*/
+ 
+class LineOverlapsLine {
+	private:
+		// minMap x, y dimensions of spatial Node bounding box
+		const minMaxPr xLocPr;
+		const minMaxPr yLocPr;
+		// axis of GroupNode
+		const EVector::Axis splitDir;
+		// the size of the group  Node
+		// group lowerLeft;
+		// minMax pairs of the group Node
+		const LineSegment  line;  // the line that encodes
+	public:
+		// initialize all variables
+		LineOverlapsLine (Layout::GroupPair loc,  const LineSegment ls):
+			 xLocPr { minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x)}, 
+			 yLocPr { minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y)},
+			 splitDir { loc.first -> splitDir},
+			 line  { ls}{}
+		// Given the size of the spatial Location Node, will determine
+		// in any lines within this node could possible be splitlines
+		bool anyOverlaps() const
+		{
+		    bool Overlaps;
+		    if (line.ax == EVector::Axis::X)
+		    { 
+			    Overlaps = strictlyOverlap( yLocPr, line.transverseVal);
+			    Overlaps = Overlaps && strictlyOverlap(xLocPr, xLocPr);
+		    }
+		    else
+		    { 
+			    Overlaps = strictlyOverlap( xLocPr, line.pr);
+			    Overlaps = Overlaps && strictlyOverlap(yLocPr, line.pr);
+		    }
+		    return Overlaps;
+		}
+		// provide the size of the location and this will return true
+		// if the group is contained within location.  If it not within
+		// the location then one needs to look to the parent
+		bool groupWithinLocation() const 
+		{
+		    bool Overlaps;
+		    if (line.ax == EVector::Axis::X)
+		    { 
+			    Overlaps = strictlyOverlap( yLocPr, line.transverseVal);
+			    Overlaps = Overlaps && containedWithin(xLocPr, line.pr);
+		    }
+		    else
+		    { 
+			    Overlaps = strictlyOverlap( xLocPr, line.transverseVal);
+			    Overlaps = Overlaps && containedWithin(yLocPr, line.pr);
+		    }
+		    return Overlaps;
+		}
+		// supply a child min max range for the bounding box in the
+		// splitDir true means that should could contain an Overlap line
+		bool operator()(const minMaxPr pr) const 
+		{
+			return strictlyOverlap(pr, line.transverseVal);
+		}
+		// true if the splitline overlaps the stored line
+		bool operator()(const Efloat& splitLine) const
+		{
+			if (splitDir == EVector::Axis::X)
+			{
+				return  xLocPr.first + splitLine == line.transverseVal;
+			}
+			else{
+				return yLocPr.first + splitLine ==  line.transverseVal;
+			}
+		}
+};
+/******************************************************************************************************
+ *  @func    findOverlappingSplits will find within a Node of the spatial structure
+ *  			tree, which Splits may overlap with a new Group;
+ *  @params[in]     GroupPair locGroup -Node and location in the spatial
+ *  			 in the spatial structure of where to look.
+ *  		    LineIntersects.  All params of the childGroup related to
+ *  		    	line intersection
+ *  @params[out]    SplitItPair  a pair of iterators of the splitLines that
+ *  		    cut the group.
+ *  @brief          In order for a group to overlap with a child There has to be an overlapping area. 
+ *  		    If a group falls within a child, it may not intersect with a
+ *  		    split line but would intersect with the children's split
+ *  		    lines.  If it is a border and no area overlaps, should be
+ *  		    false.  This is not a recursive function,
+ *  		    but just covers the children in the locGroup.
+ ******************************************************************************************************/
+Layout::SplitItPair  findOverlappingSplits(Layout::GroupPair loc, const LineIntersects& lineFunction)
+{
+	Layout::SplitItPair  pr { loc.first -> splits.end(), loc.first ->splits.end()};
+	// find the first
+	pr.first = find_if(pr.first, pr.second, lineFunction);
+	pr.second = find_if_not(pr.first, pr.second, lineFunction);
+	return pr;
+}
+/******************************************************************************************************
+ *  @func    findOverlappingChildren will find within a Node of the spatial structure
+ *  			tree, which Children may overlap with a new Group;
+ *  @params[in]     GroupPair locGroup -Node and location in the spatial
+ *  			 in the spatial structure of where to look.
+ *  		    ChildIntersects.  All params of the childGroup related to
+ *  		    	overlap
+ *  @params[out]    ChildItPair  a pair of iterators of the splitLines that
+ *  		    cut the group.
+ *  @brief          In order for a group to overlap with a child There has to be an overlapping area. 
+ *  		    If a group falls within a child, it may not intersect with a
+ *  		    split line but would intersect with the children's split
+ *  		    lines.  If it is a border and no area overlaps, should be
+ *  		    false.  This is not a recursive function,
+ *  		    but just covers the children in the locGroup.
+ ******************************************************************************************************/
+// finds overlapping children 
+Layout::ChildItPair  findOverlappingChildren(Layout::GroupPair loc, LineIntersects& child)
+{
+	Layout::ChildIt last { loc.first -> children.end()};
+	Layout::ChildItPair  pr { last, last};
+	// find the first
+	if ( loc.first ->children.size() == 0){
+		return pr;
+	}
+	Efloat prior { (loc.first -> splitDir == EVector::Axis::X) ?  
+	        loc.second.x : loc.second.y};
+	Efloat minVal { prior};
+	Efloat maxVal { (loc.first -> splitDir == EVector::Axis::X) ?  
+	        loc.first -> size.x : loc.first -> size.y};
+	Layout::ChildIt start { loc.first ->children.begin()};
+	pr.first = start;
+	// look for the first true
+	for (; pr.first < last; ++pr.first)
+	{
+		std::vector<int>::size_type t = static_cast<std::vector<int>::size_type> (pr.first - start);
+		Efloat second { (t  < loc.first -> children.size() - 1) ? 
+			         loc.first -> splits[t]: maxVal}; 
+		minMaxPr prOverlap {prior,  minVal + second};
+		bool overlaps { child(prOverlap)};
+		prior = prOverlap.second;
+		if ( overlaps) {
+			pr.second = pr.first+ 1;
+			break;
+		}
+	}
+	// now loop for the last match
+	for (; pr.second < last; ++pr.second)
+	{
+		std::vector<int>::size_type t = static_cast<std::vector<int>::size_type> 
+			      (pr.second - start);
+		Efloat second { (t  < loc.first -> children.size() - 1) ? 
+			         loc.first -> splits[t]: maxVal}; 
+		minMaxPr prOverlap {prior,  minVal + second};
+		bool overlaps { child(prOverlap)};
+		prior = prOverlap.second;
+		if ( !overlaps) {
+			break;
+		}
+	}
+	return pr;
+}
 
 Layout::LeafNode::LeafNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
 					std::weak_ptr<Node>  p,
@@ -306,6 +556,54 @@ bool Layout::LeafNode::removeFromXYLocMap(std::shared_ptr<const Layout::Node> in
 	return true;
 }
 
+Layout::GroupPair Layout::makeParentGroup(const std::vector<Layout::GroupPair> PrChildren, EVector::Axis splitDir, 
+			    std::string name)
+{
+	
+	if (PrChildren.size() == 0) {
+		return Layout::GroupPair( nullptr, EVector());
+	}
+	GroupPair parentGrp { nullptr , PrChildren[0].second};
+	std::vector<std::shared_ptr<Node>> children;
+	std::vector<Efloat>  splits;
+	std::shared_ptr<NodeValue>  v { std::make_shared<NodeValue>(NodeValue{
+				std::numeric_limits<uIDType>::max(), name, 0})};
+	typedef std::vector<Layout::GroupPair>::const_iterator GrpPairIt;
+	GrpPairIt last {PrChildren.cend()};
+	EVector size;
+	for (GrpPairIt it {PrChildren.cbegin()};it < last; ++it)
+	{
+		children.push_back(it -> first);
+		v -> n += it -> first -> v -> n;
+		// prior to last iteration
+		if ( it + 1 != last) 
+		{
+			if (splitDir == EVector::Axis::X)
+			{
+				splits.push_back(it->second.x + it -> first-> size.x -
+						parentGrp.second.x);
+			}
+			else
+			{
+				splits.push_back(it->second.y + it -> first -> size.y -
+						parentGrp.second.y);
+			}
+		}
+		else
+		{
+			size = it -> second + it -> first -> size - parentGrp.second;
+		}
+	}
+	parentGrp.first = std::make_shared<Node>(size, splitDir, std::move(splits), 
+			std::weak_ptr<Node>(), v);
+	parentGrp.first -> children = children;
+	return parentGrp;
+}
+
+
+	
+
+	
 // returns a list of Children Nodes ordered according to the splits
 // The node passed in is the Top level serializable node
 std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const std::vector<Efloat>& splits, 
@@ -596,8 +894,8 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		//Exactly one element was found
 		// need the range so only look up once.
 		GroupMapIt pr{ groups.equal_range(current) };
-		GroupMap::size_type t = static_cast<GroupMap::
-			size_type>(std::distance(pr.first, pr.second));
+		//GroupMap::size_type t = static_cast<GroupMap::
+		//	size_type>(std::distance(pr.first, pr.second));
 		if (pr.first == groups.end()) {
 			// no elements found
 			continue;
@@ -665,15 +963,22 @@ EVector   Layout::parentLLCorner(std::shared_ptr<const  Layout::Node> parent, st
 	
 
 /**************************************************************************************************
- * @func    std::shared_ptr<Node> findLLNode(std::shared_ptr<Node> init, Evector& lowerLeft)
- * @params[in]    std::shared_ptr< Node> curr: start Node should be a node
- * 			in the spatial tree with a valid parent. Should not be
- * 			a combined node in the groups.
+ * @func    std::shared_ptr<Node> findLLNode(std::shared_ptr<Node> init, Evector& lowerLeft, 
+ * 				const EVector& term)
+ * @params[in]    std::shared_ptr<const Node> init: start Node. If it is a terminal node then you
+ * 			can navigate the location KD tree and go up and down.
+ * 			If it is a groupNode in the KD tree then you also can go
+ * 			up and down.  It can also be used to find the Lower Left
+ * 			corner of a group node. In this case the lowerleft and
+ * 			term should be the same.
  *                EVector& ll init location of that node in the
- *                		spatial structure this will change for each node
- * 		  EVector&   term the lower left corner that one wants to get to
- * @params[out]   std::shared_ptr< const Node>  the primitive node with this coordinate or null if no
+ *                		spatial structure. This will get updated for each call up and down, so
+ *                		will get modified
+ *                		 as the algorithm traverses the tree.
+ * 		  const EVector&   term the lower left corner that one wants to get to
+ * @params[out]   std::shared_ptr< const Node>  the terminal node with this coordinate or null if no
  *                        such pointer exists
+ * @precondition  initial node exists.
  * @brief          will look through the tree starting at the GroupPair, searching up the tree
  * 		   or down the tree and return the node that has the lowerLeft corner at term
  ************************************************************************************************/
@@ -728,6 +1033,46 @@ std::shared_ptr<Layout::LeafNode> Layout::findLLNode(std::shared_ptr<Layout::Nod
 	return findLLNode( child, ll, term);
 }
 	
+
+ /*   @brief      if both terminal compares uid for similarity, If both not
+ *   		  terminal does not compare uid of the a, b but rather compares
+ *   		  uid of all the children.  Thus will identify same groups based
+ *   		  on topology and the identity of children, so when groups are
+ *   		  being formed, their similarity can be tested for
+ ****************************************************************************************************/
+bool sameGroup(std::shared_ptr<const Layout::Node> a, std::shared_ptr<const Layout::Node> b)
+{
+	bool same {false};
+	// if a is term and b is not or vice versa same is false (default)
+	if ( a->v ->terminal() && b ->v -> terminal() ) 
+	{
+		same = (a->v -> uid == b->v -> uid);
+	}
+	// both not terminal
+	else if ( ! (a ->v -> terminal() ||  b -> v -> terminal()))
+	{
+		if ( a -> splitDir == b -> splitDir && 
+				a -> children.size() == b -> children.size())
+		{
+		        same = true;
+			typedef std::vector<std::shared_ptr<Layout::Node>>::const_iterator VecIT;
+			VecIT ait { a->children.cbegin()};
+			VecIT bit { b -> children.cbegin()};
+			for (; ait < a -> children.cend(), bit < b ->children.cend(); 
+					++ait, ++ bit)
+			{
+				if ((*ait) -> v -> uid != (*bit) -> v -> uid)
+				{
+					same  = false;
+					break;
+				}
+			}
+		}
+	}
+	return same;
+}
+
+		
 
 // add nonterminal groups of size n to groupMap
 void Layout::BottomUp::addNTGroups(size_t in)
