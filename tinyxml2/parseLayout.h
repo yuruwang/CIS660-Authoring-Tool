@@ -81,7 +81,7 @@ namespace Layout {
 		EVector         size; // holds the size of the box
 		EVector::Axis splitDir; // split along x or y
 		std::vector<Efloat> splits;// the location of the splits
-		std::vector<std::shared_ptr<Node>>  children;
+		std::vector<std::shared_ptr<const Node>>  children;
 		std::weak_ptr<Node>  parent;
 		virtual ~Node() {}
 	};
@@ -100,6 +100,7 @@ namespace Layout {
 	// 		is one pointer to each unique node.  The second
 	// 		parameter is the Lower Left start location.
 	typedef std::pair<std::shared_ptr<Node>, EVector>  GroupPair;
+	typedef std::pair<std::shared_ptr<const Node>, const EVector>  cGroupPair;
 	// List is list of Group Pairs;
 	typedef std::pair<std::weak_ptr<const Node>, EVector>  WeakPair;
 	//childIT  is an iterator over the children of a Node
@@ -342,7 +343,7 @@ namespace Layout {
  * 		added to the groupMap.
  *****************************************************************************************************************/
 		void addNTGroups(unsigned nTerms);
-		void addNTGroups(GroupIt pr, EVector::Axis ax, unsigned nTerms);  
+		void addNTGroups(GroupMapIt pr, EVector::Axis ax, unsigned nTerms);  
 	};
 	tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);
 	

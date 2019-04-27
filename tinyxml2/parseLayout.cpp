@@ -1071,58 +1071,8 @@ bool sameGroup(std::shared_ptr<const Layout::Node> a, std::shared_ptr<const Layo
 	}
 	return same;
 }
-
-		
-
 // add nonterminal groups of size n to groupMap
-void Layout::BottomUp::addNTGroups(size_t in)
-{
-	uIDType first {next};
-	for (uIDType u = 0; u < first; u++)
-	{
-		GroupMapIt pr {groups.equal_range(u)};
-		if (pr.first == groups.end())
-		{
-				continue;
-		}
-		// TODO find the number of terms in group and figure
-		//       out what number of terms you need in the neighbors
-		// test findind left neighbor
-		for ( GroupMap::const_iterator it = pr.first; it != pr.second; ++it)
-		{
-			EVector neighborLoc { it ->second.second};
-			std::shared_ptr<Node> thisCorner { findLLNode(it ->second.first, neighborLoc, it ->second.second)};
-			EVector target = neighborLoc;
-			target.x += it->second.first->size.x;
-			std::shared_ptr<Node> neighbor  {findLLNode(thisCorner, neighborLoc, target)};
-			if (neighbor != nullptr)
-				std::cout <<" left neighborFound" << std::endl;
-			else
-				std::cout << "No left neighbor" << std::endl;
-
-		}
-		// test findind left neighbor
-		for ( GroupMap::const_iterator it = pr.first; it != pr.second; ++it)
-		{
-			EVector neighborLoc { it ->second.second};
-			std::shared_ptr<Node> thisCorner { findLLNode(it ->second.first, neighborLoc, it ->second.second)};
-			EVector target = neighborLoc;
-			target.y += it->second.first->size.y;
-			std::shared_ptr<Node> neighbor  {findLLNode(thisCorner, neighborLoc, target)};
-			neighborLoc.x += it->second.first->size.x;
-			if (neighbor != nullptr)
-				std::cout <<" top neighborFound" << std::endl;
-			else
-				std::cout << "No top neighbor" << std::endl;
-
-		}
-	}
-}
-
-
-
-// add nonterminal groups of size n to groupMap
-void Layout::BottomUp::addNTGroups(Groupsize_t in)
+void Layout::BottomUp::addNTGroups(unsigned in)
 {
 	uIDType first {next};
 	for (uIDType u = 0; u < first; u++)
@@ -1168,7 +1118,7 @@ void Layout::BottomUp::addNTGroups(Groupsize_t in)
 // creates new groups. the pr should be at least all the iterators of a unique id.
 // It will check if the created groups match from the start iterator and if it
 // does will use that uid.
-void Layout::BottomUP::addNTGroups(Layout::GroupIt pr, EVector::Axis ax, unsigned nTerms)
+void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsigned nTerms)
 {
 
 	uIDType first {next};
@@ -1181,30 +1131,36 @@ void Layout::BottomUP::addNTGroups(Layout::GroupIt pr, EVector::Axis ax, unsigne
 	{
 		unsigned termsInGroup { it -> second.first->v -> n};
 		// no groups to add
-		if (termsInGroup >= nterms){
+		if (termsInGroup >= nTerms){
 			continue;
 		}
-		unsigned termsSeek {nterms - termsInGroup};
+		unsigned termsSeek {nTerms - termsInGroup};
 		// startLoc  where to begin searching
 		EVector startLoc { it ->second.second};
 		// this corner is terminal in ll corner. 
 		std::shared_ptr<Node> thisCorner { findLLNode(it ->second.first, startLoc, it ->second.second)};
 		// target is the LL corner of neighbor sought.
-		const EVector target{ ( ax == EVector::Axis::X) ? 
-			   it -> second.second + it -> second.first -> size.x: 
-			   it -> second.second + it -> second.first -> size.y}
+		const EVector target{ (ax == EVector::Axis::X) ?
+			   it->second.second + it->second.first->size.x :
+			   it->second.second + it->second.first->size.y };
 		std::shared_ptr<LeafNode> neighbor  {findLLNode(thisCorner, startLoc, target)};
+		if (neighbor == nullptr) {
+			continue;
+		}
 		// matchingNeighbors will be a list of all groups that match
 		// width and number of terminals.  for neighbor to the left X
 		// should match Y width.
 		std::list<std::shared_ptr<const Node>> matchingNeighbors { (ax == EVector::Axis::X)?
-			 neighbor.findXYLocMap(EVector::Axis::Y, it -> second.first -> size.y, termsSeek) :
-			 neighbor.findXYLocMap(EVector::Axis::X, it -> second.first -> size.x, termsSeek)};
+			 neighbor -> findXYLocMap(EVector::Axis::Y, it -> second.first -> size.y, termsSeek) :
+			 neighbor -> findXYLocMap(EVector::Axis::X, it -> second.first -> size.x, termsSeek)};
 		for (std::shared_ptr<const Node> neighbor : matchingNeighbors)
 		{
 			const std::vector<GroupPair> children { it -> second, GroupPair( neighbor, target)};
-			string name { "group of " + nterms};
-			GroupPair NewGroupPr { makeParentGroup( children, ax, name)};
+			std::string name { "group of " + nTerms};
+			name += " with subgroups: " +
+				it->second.first->v->uid;
+			name += " and " + neighbor -> v -> uid;
+			GroupPair NewGrouPr { makeParentGroup( children, ax, name)};
 			// find first matching Group
 			// current has the id of this group;
 			uIDType  curr {first};
