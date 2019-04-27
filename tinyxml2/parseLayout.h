@@ -321,7 +321,11 @@ namespace Layout {
  * 		all groups that have a total of nTerms.  
  * @params[in]  nTerms.  The number of terminals in the built up group. If a
  * 		group has 3 terminals and nTerms is 5, this would add only
- * 		groups that have 2 terminals.
+ * 			groups that have 2 terminals.
+ * 		GroupMapIt pr  These are the GroupPairs to look for neighboring
+ * 			groups.  This is all the groups of type 7.
+ * 		EVector::Axis:: ax  Y means look for groups above and X means
+ * 			look for matching groups to the left.
  * @precondition:  all lower groups have already been built up.  In
  * 		example above all repeated groups of 3 and 2 are already in the
  * 		map.
@@ -337,9 +341,8 @@ namespace Layout {
  * 		number of terminals.  If a duplicate is created that will not be
  * 		added to the groupMap.
  *****************************************************************************************************************/
-		void addNTGroups(size_t nTerms);
-
-
+		void addNTGroups(unsigned nTerms);
+		void addNTGroups(GroupIt pr, EVector::Axis ax, unsigned nTerms);  
 	};
 	tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);
 	
