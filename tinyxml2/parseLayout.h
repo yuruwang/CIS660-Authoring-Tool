@@ -73,16 +73,16 @@ namespace Layout {
  * ******************************************************************************/
 	struct Node {
 		Node(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss, 
-				 std::weak_ptr<Node> p,
+				 std::weak_ptr<const Node> p,
 					std::shared_ptr<NodeValue> v); 
 		std::shared_ptr<NodeValue>  v; // the potentially repeated structure
 						// stores all the information of the node
 		bool terminal() const;  // use v's terminal 
-		EVector         size; // holds the size of the box
-		EVector::Axis splitDir; // split along x or y
+		const EVector         size; // holds the size of the box
+		const EVector::Axis splitDir; // split along x or y
 		std::vector<Efloat> splits;// the location of the splits
 		std::vector<std::shared_ptr<const Node>>  children;
-		std::weak_ptr<Node>  parent;
+		std::weak_ptr<const Node>  parent;
 		virtual ~Node() {}
 	};
 
@@ -99,12 +99,13 @@ namespace Layout {
 	// 		same type, their sizes could be different.  Thus there
 	// 		is one pointer to each unique node.  The second
 	// 		parameter is the Lower Left start location.
-	typedef std::pair<std::shared_ptr<Node>, EVector>  GroupPair;
-	typedef std::pair<std::shared_ptr<const Node>, const EVector>  cGroupPair;
+	typedef std::pair<std::shared_ptr<const Node>, const EVector>  GroupPair;
+	// non const Node to pass partially formed nodes
+	typedef std::pair<std::shared_ptr<Node>, const EVector>  nGroupPair;
 	// List is list of Group Pairs;
 	typedef std::pair<std::weak_ptr<const Node>, EVector>  WeakPair;
 	//childIT  is an iterator over the children of a Node
-	typedef std::vector<std::shared_ptr<Node>>::const_iterator ChildIt;
+	typedef std::vector<std::shared_ptr<const Node>>::const_iterator ChildIt;
 	typedef  std::pair<ChildIt, ChildIt>  ChildItPair; 
 	//splitIT  is an iterator over the splits in a Node
 	typedef std::vector<Efloat>::const_iterator SplitIt;
@@ -148,9 +149,9 @@ namespace Layout {
  ******************************************************************************************************/
 	struct BranchNode :Node {
 		        BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss, 
-					std::weak_ptr<Node> p,
+					std::weak_ptr<const Node> p,
 					std::shared_ptr<NodeValue> v); 
-			std::vector<WeakMap> splitGroups;
+			mutable std::vector<WeakMap> splitGroups;
 			// adds a WeakPair to the group;
 			// throws exception if expired group or failure
 			void addGroup(WeakPair group);
@@ -167,10 +168,10 @@ namespace Layout {
  * *****************************************************************************************************/
 	struct LeafNode :Node {
 		        LeafNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::weak_ptr<Node> p,
+					std::weak_ptr<const Node> p,
 					std::shared_ptr<NodeValue> v); 
 			// stores all the groups organized by lower left corner
-			XYWidth LL;
+			mutable XYWidth LL;
 /************************************************************************************************************
  * @func      addGroupToXYLocMap.
  * @args[in]  std::shared_ptr<const Node> groupNode
@@ -186,11 +187,11 @@ namespace Layout {
  * 		it is deleted in the GroupMap it will be expired here.
  * 		
  * ****************************************************************************************************/
-			InsertType addGroupToXYLocMap(std::shared_ptr<const Node> inNode);
+		        InsertType addGroupToXYLocMap(std::shared_ptr<const Node> inNode) const;
 /******************************************************************************************************
  * bool removeFromXYLocMap will remove a Node from the XY map.  It should be
  * found.  returns true if found and removed successfully */
-			bool removeFromXYLocMap(std::shared_ptr<const Node> inNode);
+		        bool removeFromXYLocMap(std::shared_ptr<const Node> inNode) const;
 /****************************************************************************************************
  * @function  list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat
  * 		size)
@@ -201,8 +202,8 @@ namespace Layout {
  * @params[out]   list<std::weak_ptr<const Node>>  the list of weak_ptrs to
  * Nodes that match.
  * ****************************************************************************************************/
-		std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width, unsigned n);
-		std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width);
+		std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width, unsigned n) const;
+		std::list<std::shared_ptr<const Node>>  findXYLocMap(EVector::Axis ax, Efloat width) const;
 	};
 
 /**************************************************************************************************
@@ -225,13 +226,13 @@ namespace Layout {
  * @brief          will look through the tree starting at the GroupPair, searching up the tree
  * 		   or down the tree and return the node that has the lowerLeft corner at term
  ************************************************************************************************/
-	std::shared_ptr<LeafNode> findLLNode(std::shared_ptr<Node> init, EVector& ll, 
+	std::shared_ptr<const LeafNode> findLLNode(std::shared_ptr<const Node> init, EVector& ll, 
 				const EVector& term);
 
 // provide a child and an absolute LL coordinate, and this finds the lower left
 // coordinate of the parent.
-	EVector   parentLLCorner(std::shared_ptr<const  Layout::Node> parent, std::shared_ptr<const Layout::Node> child, 
-				EVector& minValueChild);
+	void   parentLLCorner(std::shared_ptr<const  Layout::Node> parent, std::shared_ptr<const Layout::Node> child, 
+				 EVector& minValueChild);
 
 /*******************************************************************************************************
  *   bool sameGroup(std::shared_ptr<const Node> a, std::shared_ptr<const Node>
@@ -262,7 +263,7 @@ namespace Layout {
  * 	      terminals.  It does not alter the children in any way and does not
  * 	      reset the children's parents
  * **************************************************************************************************/
-	   GroupPair makeParentGroup(const std::vector<GroupPair> children, EVector::Axis splitDir, 
+	   nGroupPair makeParentGroup(const std::vector<GroupPair> children, EVector::Axis splitDir, 
 			    std::string name = "unlabeled");   
 /*******************************************************************************************************
  * BottomUp   Holds the data structures for the Bottom up approach.
@@ -279,13 +280,13 @@ namespace Layout {
 		// left coordinate
 		GroupMap groups;
 		// holds the spatial data structure for the location of the NT and terminal regions
-		std::shared_ptr<Node> location;
+		std::shared_ptr<const Node> location;
 		// cross reference maps names to uids
 		nameMap    names;
 		uIDType next;
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
-		std::shared_ptr<Node> XMLNode(XMLNodePr&& , std::weak_ptr<Node> p,
+		std::shared_ptr<const Node> XMLNode(XMLNodePr&& , std::weak_ptr<const Node> p,
 				const EVector& minVal, int level, nameMap& namesFound);
 ///****************************************************************************************************
 // *          addNodeValue will just add the NodeValue to the nameMap; if
@@ -299,7 +300,7 @@ namespace Layout {
  *              addNodeTo GroupMap; This adds a new Node to the group Map.  It
  *              returns an iterator to the list element that holds the node. 
  **************************************************************************************************************/
-		GroupMap::const_iterator addToGroupMap(std::shared_ptr<Node>, const EVector& minLocation, 
+		GroupMap::const_iterator addToGroupMap(std::shared_ptr<const Node>, const EVector& minLocation, 
 				GroupType expectedNew);
 		// returns a list of Children Nodes ordered according to the splits
 		// The node passed in is the Top level serializable node
@@ -307,9 +308,9 @@ namespace Layout {
 		// (for the data), the nodeParent, the minVal postion, the level
 		// int and the nameFound. alot of the arguments are to call
 		// xmlnode on the children
-		std::vector<std::shared_ptr<Node>> GetChildren(const std::vector<Efloat>& splits, 
-				EVector::Axis ax, const tinyxml2::XMLNode * parent, 
-				std::weak_ptr<Node> nodeParent, const EVector& minVal, 
+		std::vector<std::shared_ptr<const Node>> GetChildren(const std::vector<Efloat>& splits, 
+				const EVector::Axis ax, const tinyxml2::XMLNode * parent, 
+				std::weak_ptr<const Node> nodeParent, const EVector& minVal, 
 				int level, nameMap& namesFound);
 /*************************************************************************************************************
  * @func  	removeSingles  removes groups that are repeated only once

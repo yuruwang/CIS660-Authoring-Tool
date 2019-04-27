@@ -101,7 +101,7 @@ const EVector&  Layout::BoundBox::size() const
 
 Layout::Node::Node(const EVector& sz, const EVector::Axis sd, 
 		                std::vector<Efloat>&& ss, 
-				std::weak_ptr<Node> p,
+				std::weak_ptr<const Node> p,
                                 std::shared_ptr<NodeValue> vd) : v{vd},
 					size{sz}, splitDir{sd}, 
 					splits{std::move(ss)},
@@ -109,7 +109,7 @@ Layout::Node::Node(const EVector& sz, const EVector::Axis sd,
 {}
 
 Layout::BranchNode::BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::weak_ptr<Node> p, std::shared_ptr<NodeValue> v ):
+					std::weak_ptr<const Node> p, std::shared_ptr<NodeValue> v ):
 					Node(sz, sd, std::move(ss),  p, v)
 {}
 typedef   std::pair<Efloat, Efloat> minMaxPr;
@@ -369,7 +369,7 @@ Layout::ChildItPair  findOverlappingChildren(Layout::GroupPair loc, LineIntersec
 }
 
 Layout::LeafNode::LeafNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
-					std::weak_ptr<Node>  p,
+					std::weak_ptr<const Node>  p,
 				std::shared_ptr<NodeValue> v ):
 				Node(sz, sd, std::move(ss), p, v)
 {}
@@ -390,7 +390,7 @@ Layout::LeafNode::LeafNode(const EVector& sz, const EVector::Axis sd, std::vecto
  * 		it is deleted in the GroupMap it will be expired here.
  * 		
  * ****************************************************************************************************/
-Layout::InsertType Layout::LeafNode::addGroupToXYLocMap(std::shared_ptr<const Node> inNode)
+Layout::InsertType Layout::LeafNode::addGroupToXYLocMap(std::shared_ptr<const Node> inNode) const
 {
 	XYWidth::iterator  XYit {LL.find(inNode->size.x)};
 	InsertType type {Fail};
@@ -456,7 +456,7 @@ Layout::InsertType Layout::LeafNode::addGroupToXYLocMap(std::shared_ptr<const No
  * Nodes that match.
  * ****************************************************************************************************/
 std::list<std::shared_ptr<const Layout::Node>>  Layout::LeafNode::findXYLocMap(EVector::Axis ax, 
-					Efloat width, unsigned n)
+					Efloat width, unsigned n) const
 {
 	std::list<std::shared_ptr<const Node>> list;
 	if (ax == EVector::Axis::X) { 
@@ -498,7 +498,7 @@ std::list<std::shared_ptr<const Layout::Node>>  Layout::LeafNode::findXYLocMap(E
 	}
 	return list;
 }
-std::list<std::shared_ptr<const Layout::Node>>  Layout::LeafNode::findXYLocMap(EVector::Axis ax, Efloat width)
+std::list<std::shared_ptr<const Layout::Node>>  Layout::LeafNode::findXYLocMap(EVector::Axis ax, Efloat width) const
 {
 	std::list<std::shared_ptr<const Node>> list;
 	if (ax == EVector::Axis::X) { 
@@ -536,7 +536,7 @@ std::list<std::shared_ptr<const Layout::Node>>  Layout::LeafNode::findXYLocMap(E
 /******************************************************************************************************
  * bool removeFromXYLocMap will remove a Node from the XY map.  It should be
  * found.  returns true if found and removed successfully */
-bool Layout::LeafNode::removeFromXYLocMap(std::shared_ptr<const Layout::Node> inNode)
+bool Layout::LeafNode::removeFromXYLocMap(std::shared_ptr<const Layout::Node> inNode) const
 {
 	if (inNode == nullptr){
 		return false;
@@ -556,15 +556,15 @@ bool Layout::LeafNode::removeFromXYLocMap(std::shared_ptr<const Layout::Node> in
 	return true;
 }
 
-Layout::GroupPair Layout::makeParentGroup(const std::vector<Layout::GroupPair> PrChildren, EVector::Axis splitDir, 
+Layout::nGroupPair Layout::makeParentGroup(const std::vector<Layout::GroupPair> PrChildren, EVector::Axis splitDir, 
 			    std::string name)
 {
 	
 	if (PrChildren.size() == 0) {
-		return Layout::GroupPair( nullptr, EVector());
+		return Layout::nGroupPair( nullptr, EVector());
 	}
-	GroupPair parentGrp { nullptr , PrChildren[0].second};
-	std::vector<std::shared_ptr<Node>> children;
+	nGroupPair parentGrp { nullptr , PrChildren[0].second};
+	std::vector<std::shared_ptr<const Node>> children;
 	std::vector<Efloat>  splits;
 	std::shared_ptr<NodeValue>  v { std::make_shared<NodeValue>(NodeValue{
 				std::numeric_limits<uIDType>::max(), name, 0})};
@@ -596,7 +596,7 @@ Layout::GroupPair Layout::makeParentGroup(const std::vector<Layout::GroupPair> P
 	}
 	parentGrp.first = std::make_shared<Node>(size, splitDir, std::move(splits), 
 			std::weak_ptr<Node>(), v);
-	parentGrp.first -> children = children;
+	parentGrp.first -> children = std::move(children);
 	return parentGrp;
 }
 
@@ -606,12 +606,12 @@ Layout::GroupPair Layout::makeParentGroup(const std::vector<Layout::GroupPair> P
 	
 // returns a list of Children Nodes ordered according to the splits
 // The node passed in is the Top level serializable node
-std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const std::vector<Efloat>& splits, 
-				EVector::Axis ax, const tinyxml2::XMLNode * parent, 
-				std::weak_ptr<Node> p, const EVector& minVal, 
+std::vector<std::shared_ptr<const Layout::Node>> Layout::BottomUp::GetChildren(const std::vector<Efloat>& splits, 
+				const EVector::Axis ax, const tinyxml2::XMLNode * parent, 
+				std::weak_ptr<const Node> p, const EVector& minVal, 
 				int level, Layout::nameMap& namesFound)
 {
-	std::vector<std::shared_ptr<Node>> children;
+	std::vector<std::shared_ptr<const Node>> children;
 	// will be for Serializable Shape
 	const tinyxml2::XMLNode * SerShape = parent->FirstChildElement("Children");
 	if (SerShape == nullptr) return children;
@@ -666,7 +666,7 @@ std::vector<std::shared_ptr<Layout::Node>> Layout::BottomUp::GetChildren(const s
 	}
 	return children;
 }
-std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, std::weak_ptr<Node> p,
+std::shared_ptr<const Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& nodePr, std::weak_ptr<const Node> p,
 		         const EVector&  minVal, int level,  Layout::nameMap& namesFound)
 {
 	const tinyxml2::XMLElement* elem = nodePr.first->FirstChildElement("Level");
@@ -716,11 +716,11 @@ std::shared_ptr<Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&& node
 	if (splitDir == EVector::Axis::X)
 	{
 		dir = nodePr.first ->FirstChildElement("SplitsX");
-		splits = parseList(dir, minVal.x);
+		splits = std::move(parseList(dir, minVal.x));
 	}
 	else {
 		dir = nodePr.first ->FirstChildElement("SplitsY");
-		splits = parseList(dir, minVal.y);
+		splits = std::move(parseList(dir, minVal.y));
 	}
 	std::shared_ptr<Node> thisNode;
 	if ( splits.size() == 0) {
@@ -827,7 +827,7 @@ Layout::GroupType Layout::BottomUp::addNodeValue(std::shared_ptr<NodeValue>& nod
  *              returns an iterator to the list element that holds the node.
  **************************************************************************************************************/
 Layout::GroupMap::const_iterator Layout::BottomUp::addToGroupMap(
-	std::shared_ptr<Layout::Node> node, const EVector& minLocation, Layout::GroupType grouptype)
+	std::shared_ptr<const Layout::Node> node, const EVector& minLocation, Layout::GroupType grouptype)
 {
 	uIDType uid =  node -> v-> uid;
 	GroupMapIt itpair  {groups.equal_range(uid)};
@@ -914,7 +914,7 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		    	}
 		    	names.erase(nameit);
 				EVector StartSearch = pr.first->second.second;
-		    	std::shared_ptr<LeafNode>  llcorner { findLLNode(pr.first -> second.first , 
+		    	std::shared_ptr<const LeafNode>  llcorner { findLLNode(pr.first -> second.first , 
 					                                    StartSearch,
 				                            pr.first -> second.second)};
 		    	bool success {llcorner ->removeFromXYLocMap(pr.first ->second.first)};
@@ -937,11 +937,11 @@ bool withinBox (const EVector& ll, const EVector& size, const EVector& d)
 }
 // provide a child and an absolute LL coordinate, and this finds the lower left
 // coordinate of the parent.
-EVector   Layout::parentLLCorner(std::shared_ptr<const  Layout::Node> parent, std::shared_ptr<const Layout::Node> child, 
+void   Layout::parentLLCorner(std::shared_ptr<const  Layout::Node> parent, std::shared_ptr<const Layout::Node> child, 
 				EVector& minValueChild)
 {
-	std::vector<std::shared_ptr<Layout::Node>>::const_iterator it = find(parent->children.begin(), 
-						parent->children.end(), child);
+	std::vector<std::shared_ptr<const Layout::Node>>::const_iterator it = find(parent->children.cbegin(), 
+						parent->children.cend(), child);
 	if ( it == parent->children.end() )
 	{
 		throw std::runtime_error("child not found");
@@ -949,7 +949,7 @@ EVector   Layout::parentLLCorner(std::shared_ptr<const  Layout::Node> parent, st
 	std::ptrdiff_t diff = it - parent->children.begin();
 	if (diff == 0)
 	{
-		return minValueChild;
+		return;
 	}
 	if (parent -> splitDir == EVector::Axis::X)
 	{
@@ -958,7 +958,7 @@ EVector   Layout::parentLLCorner(std::shared_ptr<const  Layout::Node> parent, st
 	else{
 		minValueChild.y -= parent->splits[diff -1];
 	}
-	return minValueChild;
+	return;
 }
 	
 
@@ -982,7 +982,7 @@ EVector   Layout::parentLLCorner(std::shared_ptr<const  Layout::Node> parent, st
  * @brief          will look through the tree starting at the GroupPair, searching up the tree
  * 		   or down the tree and return the node that has the lowerLeft corner at term
  ************************************************************************************************/
-std::shared_ptr<Layout::LeafNode> Layout::findLLNode(std::shared_ptr<Layout::Node> curr,  EVector& ll, const EVector& term)
+std::shared_ptr<const Layout::LeafNode> Layout::findLLNode(std::shared_ptr< const Layout::Node> curr,  EVector& ll, const EVector& term)
 {
 	if (curr == nullptr) {
 		throw std::runtime_error("initial Node is null\n");
@@ -994,8 +994,9 @@ std::shared_ptr<Layout::LeafNode> Layout::findLLNode(std::shared_ptr<Layout::Nod
 		if (!curr-> parent.expired())
 		{
 			// get the lower left corner of parent
-			std::shared_ptr<Layout::Node> pp = curr->parent.lock();
-			ll = parentLLCorner(pp, curr, ll);
+			std::shared_ptr<const Layout::Node> pp = curr->parent.lock();
+			// updates ll to be that of the parent
+			parentLLCorner(pp, curr, ll);
 			return findLLNode(pp, ll, term);
 		}
 		else {
@@ -1005,7 +1006,7 @@ std::shared_ptr<Layout::LeafNode> Layout::findLLNode(std::shared_ptr<Layout::Nod
 	//terminal case where either this location is the lower left or is not	
 	if (  curr->v->terminal()) {
 		// std::shared_ptr<LeafNode> lf = std::dynamic_pointer_cast<LeafNode>(curr);
-		return (term == ll)? std::dynamic_pointer_cast<LeafNode>(curr): std::shared_ptr<LeafNode>(nullptr);
+		return (term == ll)? std::dynamic_pointer_cast<const LeafNode>(curr): std::shared_ptr<const LeafNode>(nullptr);
 	}
 	// within a child find the child
 	
@@ -1014,9 +1015,9 @@ std::shared_ptr<Layout::LeafNode> Layout::findLLNode(std::shared_ptr<Layout::Nod
 	// find the last value that minVal could be inserted and is greater than relativeMin. 
 	// This is the first slit that is greater than the value  and is the correct
 	// function.
-	std::vector<Efloat>::const_iterator it {std::upper_bound( curr->splits.begin(), 
-			 	curr->splits.end(), minVal)};
-	int indx { static_cast<int>(it - curr->splits.begin())};
+	std::vector<Efloat>::const_iterator it {std::upper_bound( curr->splits.cbegin(), 
+			 	curr->splits.cend(), minVal)};
+	int indx { static_cast<int>(it - curr->splits.cbegin())};
 	// update the lower bound of the new box
 	if (indx != 0)
 	{
@@ -1029,7 +1030,7 @@ std::shared_ptr<Layout::LeafNode> Layout::findLLNode(std::shared_ptr<Layout::Nod
 	}
 	// because children have one more element than splits, the indx
 	// is correct for the children vector
-	std::shared_ptr<Layout::Node> child {curr->children[indx]};
+	std::shared_ptr<const Layout::Node> child {curr->children[indx]};
 	return findLLNode( child, ll, term);
 }
 	
@@ -1040,7 +1041,7 @@ std::shared_ptr<Layout::LeafNode> Layout::findLLNode(std::shared_ptr<Layout::Nod
  *   		  on topology and the identity of children, so when groups are
  *   		  being formed, their similarity can be tested for
  ****************************************************************************************************/
-bool sameGroup(std::shared_ptr<const Layout::Node> a, std::shared_ptr<const Layout::Node> b)
+bool Layout::sameGroup(std::shared_ptr<const Layout::Node> a, std::shared_ptr<const Layout::Node> b)
 {
 	bool same {false};
 	// if a is term and b is not or vice versa same is false (default)
@@ -1055,7 +1056,7 @@ bool sameGroup(std::shared_ptr<const Layout::Node> a, std::shared_ptr<const Layo
 				a -> children.size() == b -> children.size())
 		{
 		        same = true;
-			typedef std::vector<std::shared_ptr<Layout::Node>>::const_iterator VecIT;
+			typedef std::vector<std::shared_ptr<const Layout::Node>>::const_iterator VecIT;
 			VecIT ait { a->children.cbegin()};
 			VecIT bit { b -> children.cbegin()};
 			for (; ait < a -> children.cend(), bit < b ->children.cend(); 
@@ -1082,37 +1083,6 @@ void Layout::BottomUp::addNTGroups(unsigned in)
 		{
 				continue;
 		}
-		// TODO find the number of terms in group and figure
-		//       out what number of terms you need in the neighbors
-		// test findind left neighbor
-		for ( GroupMap::const_iterator it = pr.first; it != pr.second; ++it)
-		{
-			EVector neighborLoc { it ->second.second};
-			std::shared_ptr<Node> thisCorner { findLLNode(it ->second.first, neighborLoc, it ->second.second)};
-			EVector target = neighborLoc;
-			target.x += it->second.first->size.x;
-			std::shared_ptr<Node> neighbor  {findLLNode(thisCorner, neighborLoc, target)};
-			if (neighbor != nullptr)
-				std::cout <<" left neighborFound" << std::endl;
-			else
-				std::cout << "No left neighbor" << std::endl;
-
-		}
-		// test findind left neighbor
-		for ( GroupMap::const_iterator it = pr.first; it != pr.second; ++it)
-		{
-			EVector neighborLoc { it ->second.second};
-			std::shared_ptr<Node> thisCorner { findLLNode(it ->second.first, neighborLoc, it ->second.second)};
-			EVector target = neighborLoc;
-			target.y += it->second.first->size.y;
-			std::shared_ptr<Node> neighbor  {findLLNode(thisCorner, neighborLoc, target)};
-			neighborLoc.x += it->second.first->size.x;
-			if (neighbor != nullptr)
-				std::cout <<" top neighborFound" << std::endl;
-			else
-				std::cout << "No top neighbor" << std::endl;
-
-		}
 	}
 }
 // creates new groups. the pr should be at least all the iterators of a unique id.
@@ -1138,12 +1108,12 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 		// startLoc  where to begin searching
 		EVector startLoc { it ->second.second};
 		// this corner is terminal in ll corner. 
-		std::shared_ptr<Node> thisCorner { findLLNode(it ->second.first, startLoc, it ->second.second)};
+		std::shared_ptr<const LeafNode> thisCorner { findLLNode(it ->second.first, startLoc, it ->second.second)};
 		// target is the LL corner of neighbor sought.
 		const EVector target{ (ax == EVector::Axis::X) ?
 			   it->second.second + it->second.first->size.x :
 			   it->second.second + it->second.first->size.y };
-		std::shared_ptr<LeafNode> neighbor  {findLLNode(thisCorner, startLoc, target)};
+		std::shared_ptr<const LeafNode> neighbor  {findLLNode(thisCorner, startLoc, target)};
 		if (neighbor == nullptr) {
 			continue;
 		}
@@ -1153,23 +1123,23 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 		std::list<std::shared_ptr<const Node>> matchingNeighbors { (ax == EVector::Axis::X)?
 			 neighbor -> findXYLocMap(EVector::Axis::Y, it -> second.first -> size.y, termsSeek) :
 			 neighbor -> findXYLocMap(EVector::Axis::X, it -> second.first -> size.x, termsSeek)};
-		for (std::shared_ptr<const Node> neighbor : matchingNeighbors)
+		for (std::shared_ptr<const Node> mneighbor : matchingNeighbors)
 		{
-			const std::vector<GroupPair> children { it -> second, GroupPair( neighbor, target)};
+			const std::vector<GroupPair> children { it -> second, GroupPair( mneighbor, target)};
 			std::string name { "group of " + nTerms};
 			name += " with subgroups: " +
 				it->second.first->v->uid;
 			name += " and " + neighbor -> v -> uid;
-			GroupPair NewGrouPr { makeParentGroup( children, ax, name)};
+			GroupPair NewGroupPr { makeParentGroup( children, ax, name)};
 			// find first matching Group
 			// current has the id of this group;
 			uIDType  curr {first};
 			GroupType grouptype { Layout::GroupType::New};
 			for ( ; curr < next; ++curr) {
-				Layout::GroupIt matching {groups.equal_range(curr)};
+				Layout::GroupMapIt matching {groups.equal_range(curr)};
 				if (matching.first != matching.second)
 				{ 
-					if (Layout::sameGroup(matching.first -> second.first, NewGroupPr.first){
+					if (Layout::sameGroup(matching.first -> second.first, NewGroupPr.first)){
 							grouptype = GroupType::Existing;
 							break;
 					}
@@ -1179,12 +1149,11 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 			// new group number
 			if (curr == next) ++next;
 			addToGroupMap( NewGroupPr.first, NewGroupPr.second, grouptype);
-			neighbor.addGroupToXYLocMap(NewGroupPr.first);
+			thisCorner -> addGroupToXYLocMap(NewGroupPr.first);
 		}
 
 	}
 }
-
 
 
 
