@@ -1,4 +1,5 @@
 #include "parseLayout.h"
+#include <sstream>
 #include <algorithm>
 tinyxml2::XMLElement* Layout::getElement(tinyxml2::XMLDocument* doc, char* input)
 {
@@ -545,7 +546,7 @@ bool Layout::LeafNode::removeFromXYLocMap(std::shared_ptr<const Layout::Node> in
 	if (XYit == LL.end()){
 	 	throw std::runtime_error("No node with that X width found");
 	}
-	YWidth::iterator Yit { XYit -> second.find(size.y)};
+	YWidth::iterator Yit { XYit -> second.find(inNode ->size.y)};
 	if (Yit == XYit ->second.end()){
 		throw std::runtime_error("No Node with Y Width");
 	}
@@ -879,8 +880,10 @@ Layout::BottomUp::BottomUp( const char * filename): next{0}
 
 		EVector leftCorner(0, 0, 0);
 		location = XMLNode(std::move(pr), std::weak_ptr<Node>(), leftCorner, 0, names);
-		removeSingles(0, next);
-		addNTGroups(2);
+		for (unsigned n{ 1 }; n <= location->v->n/2; ++n)
+		{
+			addNTGroups(n);
+		};
 }
 
 /*************************************************************************************************************
@@ -1075,14 +1078,16 @@ bool Layout::sameGroup(std::shared_ptr<const Layout::Node> a, std::shared_ptr<co
 // add nonterminal groups of size n to groupMap
 void Layout::BottomUp::addNTGroups(unsigned in)
 {
-	uIDType first {next};
-	for (uIDType u = 0; u < first; u++)
+	uIDType init {next};
+	for (uIDType u = 0; u < init; u++)
 	{
 		GroupMapIt pr {groups.equal_range(u)};
-		if (pr.first == groups.end())
-		{
-				continue;
-		}
+		uIDType start{ next };
+		addNTGroups(pr, EVector::Axis::X, in);
+		removeSingles(start, next);
+		start = next;
+		addNTGroups(pr, EVector::Axis::Y, in);
+		removeSingles(start, next);
 	}
 }
 // creates new groups. the pr should be at least all the iterators of a unique id.
@@ -1109,10 +1114,17 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 		EVector startLoc { it ->second.second};
 		// this corner is terminal in ll corner. 
 		std::shared_ptr<const LeafNode> thisCorner { findLLNode(it ->second.first, startLoc, it ->second.second)};
+		//bool matchx =it->second.second.x == Efloat(0, Efloat::Normal);
+		//matchx = matchx && it->second.second.y == Efloat(0.0295818001, Efloat::Normal);
 		// target is the LL corner of neighbor sought.
-		const EVector target{ (ax == EVector::Axis::X) ?
-			   it->second.second + it->second.first->size.x :
-			   it->second.second + it->second.first->size.y };
+		EVector target{ it->second.second };
+		if (ax == EVector::Axis::X)
+		{
+			target.x += it->second.first->size.x;
+		}
+		else {
+			target.y += it->second.first->size.y;
+		}
 		std::shared_ptr<const LeafNode> neighbor  {findLLNode(thisCorner, startLoc, target)};
 		if (neighbor == nullptr) {
 			continue;
@@ -1126,11 +1138,15 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 		for (std::shared_ptr<const Node> mneighbor : matchingNeighbors)
 		{
 			const std::vector<GroupPair> children { it -> second, GroupPair( mneighbor, target)};
-			std::string name { "group of " + nTerms};
-			name += " with subgroups: " +
-				it->second.first->v->uid;
-			name += " and " + neighbor -> v -> uid;
-			GroupPair NewGroupPr { makeParentGroup( children, ax, name)};
+			std::ostringstream ss;
+			ss << "Terms : " << nTerms;
+			ss << "; groups : " << it->second.first->v->uid;
+			ss << " & " << mneighbor->v->uid;
+			ss << ((ax == EVector::Axis::X) ? " X" : " Y");
+			nGroupPair NewGroupPr { makeParentGroup( children, ax, ss.str())};
+			//bool matchsizex = NewGroupPr.first->size.x == Efloat(1.0, Efloat::Normal);
+			//matchsizex = matchsizex && NewGroupPr.first->size.y == Efloat(0.269383729, Efloat::Normal);
+
 			// find first matching Group
 			// current has the id of this group;
 			uIDType  curr {first};
@@ -1146,10 +1162,34 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 				}
 			}
 			NewGroupPr.first->v -> uid = curr;
-			// new group number
-			if (curr == next) ++next;
-			addToGroupMap( NewGroupPr.first, NewGroupPr.second, grouptype);
-			thisCorner -> addGroupToXYLocMap(NewGroupPr.first);
+			// current < next means this group is repeated 
+			InsertType type {thisCorner -> addGroupToXYLocMap(NewGroupPr.first)};
+			switch (type)
+			{
+				// a prior node exists at this location with the
+				// same size and number of terminals
+				case OldNode: // don't add and don't increment
+					break;
+				case NewNode:
+					// increment and update the names
+					if (curr == next) {
+						grouptype = addNodeValue(NewGroupPr.first -> v, names);
+					}
+					addToGroupMap( NewGroupPr.first, 
+							NewGroupPr.second, grouptype);
+					break;
+				case NewExpired:
+					if (curr == next) {
+						grouptype = addNodeValue(NewGroupPr.first -> v, names);
+					}
+					addToGroupMap( NewGroupPr.first, 
+							NewGroupPr.second, grouptype);
+					throw std::runtime_error("Expired matching Group");
+					break;
+				default:
+					throw std::runtime_error("failed to insert");
+					break;
+			}
 		}
 
 	}
