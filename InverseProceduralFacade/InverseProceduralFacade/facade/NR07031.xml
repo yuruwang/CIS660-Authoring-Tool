@@ -1,0 +1,2757 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SerializableFacade>
+<MainShape>
+    <Name>ShapeId 0 0 0</Name>
+    <MaterialName>Default</MaterialName>
+    <Level>0</Level>
+    <UId>0</UId>
+    <Groups>-1</Groups>
+    <Isolated>0</Isolated>
+    <BBox>
+      <Min>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+      </Min>
+      <Max>
+        <X>1</X>
+        <Y>0.60389</Y>
+        <Z>0.3</Z>
+      </Max>
+      <Size>
+        <X>1</X>
+        <Y>0.60389</Y>
+        <Z>0.3</Z>
+      </Size>
+    </BBox>
+    <Label>
+      <LabelID>1</LabelID>
+      <LabelName>building</LabelName>
+    </Label>
+    <Children>
+      <SerializableShape>
+        <Name>ShapeId 0 0 0</Name>
+        <MaterialName>Default</MaterialName>
+        <Level>1</Level>
+        <UId>15</UId>
+        <Groups>-1</Groups>
+        <Isolated>0</Isolated>
+        <BBox>
+          <Min>
+            <X>0</X>
+            <Y>0</Y>
+            <Z>0</Z>
+          </Min>
+          <Max>
+            <X>1</X>
+            <Y>0.197916</Y>
+            <Z>0.3</Z>
+          </Max>
+          <Size>
+            <X>1</X>
+            <Y>0.197916</Y>
+            <Z>0.3</Z>
+          </Size>
+        </BBox>
+        <Label>
+          <LabelID>0</LabelID>
+          <LabelName>unlabeled</LabelName>
+        </Label>
+        <Children>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>140</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.0660294</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0660294</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>141</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.0660294</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.117372</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0513428</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>unlabeled</LabelName>
+            </Label>
+            <Children>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>191</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.0660294</X>
+                    <Y>0</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.117372</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>192</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.0660294</X>
+                    <Y>0.0347773</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.117372</X>
+                    <Y>0.0910084</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0562311</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window4</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>193</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.0660294</X>
+                    <Y>0.0910084</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.117372</X>
+                    <Y>0.118115</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.027107</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>194</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.0660294</X>
+                    <Y>0.118115</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.117372</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0798011</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window3</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+            </Children>
+            <SplitsX />
+            <SplitsY>
+              <float>0.118115</float>
+              <float>0.0910084</float>
+              <float>0.0347773</float>
+            </SplitsY>
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>142</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.117372</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.26677</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.149398</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>143</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.26677</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.318113</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0513428</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>unlabeled</LabelName>
+            </Label>
+            <Children>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>195</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.26677</X>
+                    <Y>0</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.318113</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>196</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.26677</X>
+                    <Y>0.0347773</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.318113</X>
+                    <Y>0.0910084</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0562311</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window4</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>197</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.26677</X>
+                    <Y>0.0910084</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.318113</X>
+                    <Y>0.118115</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.027107</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>198</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.26677</X>
+                    <Y>0.118115</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.318113</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0798011</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window3</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+            </Children>
+            <SplitsX />
+            <SplitsY>
+              <float>0.118115</float>
+              <float>0.0910084</float>
+              <float>0.0347773</float>
+            </SplitsY>
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>146</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.616327</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.672114</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0557874</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>147</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.672114</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.723457</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0513428</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>unlabeled</LabelName>
+            </Label>
+            <Children>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>199</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.672114</X>
+                    <Y>0</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.723457</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>200</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.672114</X>
+                    <Y>0.0347773</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.723457</X>
+                    <Y>0.0910084</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0562311</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window4</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>201</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.672114</X>
+                    <Y>0.0910084</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.723457</X>
+                    <Y>0.118115</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.027107</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>202</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.672114</X>
+                    <Y>0.118115</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.723457</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0798011</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window3</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+            </Children>
+            <SplitsX />
+            <SplitsY>
+              <float>0.118115</float>
+              <float>0.0910084</float>
+              <float>0.0347773</float>
+            </SplitsY>
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>148</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.723457</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.872855</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.149398</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>149</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.872855</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.924198</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0513428</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>unlabeled</LabelName>
+            </Label>
+            <Children>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>203</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.872855</X>
+                    <Y>0</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.924198</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0347773</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>204</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.872855</X>
+                    <Y>0.0347773</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.924198</X>
+                    <Y>0.0910084</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0562311</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window4</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>205</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.872855</X>
+                    <Y>0.0910084</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.924198</X>
+                    <Y>0.118115</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.027107</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>206</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.872855</X>
+                    <Y>0.118115</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.924198</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513428</X>
+                    <Y>0.0798011</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window3</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+            </Children>
+            <SplitsX />
+            <SplitsY>
+              <float>0.118115</float>
+              <float>0.0910084</float>
+              <float>0.0347773</float>
+            </SplitsY>
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>150</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.924198</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>1</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0758023</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>158</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.318113</X>
+                <Y>0</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.616327</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.298214</X>
+                <Y>0.197916</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>unlabeled</LabelName>
+            </Label>
+            <Children>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>161</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.318113</X>
+                    <Y>0</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.433105</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.114992</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>unlabeled</LabelName>
+                </Label>
+                <Children>
+                  <SerializableShape>
+                    <Name>ShapeId 0 0 0</Name>
+                    <MaterialName>Default</MaterialName>
+                    <Level>4</Level>
+                    <UId>173</UId>
+                    <Groups>-1</Groups>
+                    <Isolated>0</Isolated>
+                    <BBox>
+                      <Min>
+                        <X>0.318113</X>
+                        <Y>0</Y>
+                        <Z>0</Z>
+                      </Min>
+                      <Max>
+                        <X>0.433105</X>
+                        <Y>0.029165</Y>
+                        <Z>0.3</Z>
+                      </Max>
+                      <Size>
+                        <X>0.114992</X>
+                        <Y>0.029165</Y>
+                        <Z>0.3</Z>
+                      </Size>
+                    </BBox>
+                    <Label>
+                      <LabelID>0</LabelID>
+                      <LabelName>wall1</LabelName>
+                    </Label>
+                    <Children />
+                    <SplitsX />
+                    <SplitsY />
+                  </SerializableShape>
+                  <SerializableShape>
+                    <Name>ShapeId 0 0 0</Name>
+                    <MaterialName>Default</MaterialName>
+                    <Level>4</Level>
+                    <UId>174</UId>
+                    <Groups>-1</Groups>
+                    <Isolated>0</Isolated>
+                    <BBox>
+                      <Min>
+                        <X>0.318113</X>
+                        <Y>0.029165</Y>
+                        <Z>0</Z>
+                      </Min>
+                      <Max>
+                        <X>0.433105</X>
+                        <Y>0.179761</Y>
+                        <Z>0.3</Z>
+                      </Max>
+                      <Size>
+                        <X>0.114992</X>
+                        <Y>0.150596</Y>
+                        <Z>0.3</Z>
+                      </Size>
+                    </BBox>
+                    <Label>
+                      <LabelID>0</LabelID>
+                      <LabelName>unlabeled</LabelName>
+                    </Label>
+                    <Children>
+                      <SerializableShape>
+                        <Name>ShapeId 0 0 0</Name>
+                        <MaterialName>Default</MaterialName>
+                        <Level>5</Level>
+                        <UId>181</UId>
+                        <Groups>-1</Groups>
+                        <Isolated>0</Isolated>
+                        <BBox>
+                          <Min>
+                            <X>0.318113</X>
+                            <Y>0.029165</Y>
+                            <Z>0</Z>
+                          </Min>
+                          <Max>
+                            <X>0.355754</X>
+                            <Y>0.179761</Y>
+                            <Z>0.3</Z>
+                          </Max>
+                          <Size>
+                            <X>0.0376409</X>
+                            <Y>0.150596</Y>
+                            <Z>0.3</Z>
+                          </Size>
+                        </BBox>
+                        <Label>
+                          <LabelID>0</LabelID>
+                          <LabelName>wall1</LabelName>
+                        </Label>
+                        <Children />
+                        <SplitsX />
+                        <SplitsY />
+                      </SerializableShape>
+                      <SerializableShape>
+                        <Name>ShapeId 0 0 0</Name>
+                        <MaterialName>Default</MaterialName>
+                        <Level>5</Level>
+                        <UId>182</UId>
+                        <Groups>-1</Groups>
+                        <Isolated>0</Isolated>
+                        <BBox>
+                          <Min>
+                            <X>0.355754</X>
+                            <Y>0.029165</Y>
+                            <Z>0</Z>
+                          </Min>
+                          <Max>
+                            <X>0.414112</X>
+                            <Y>0.179761</Y>
+                            <Z>0.3</Z>
+                          </Max>
+                          <Size>
+                            <X>0.0583582</X>
+                            <Y>0.150596</Y>
+                            <Z>0.3</Z>
+                          </Size>
+                        </BBox>
+                        <Label>
+                          <LabelID>0</LabelID>
+                          <LabelName>window5</LabelName>
+                        </Label>
+                        <Children />
+                        <SplitsX />
+                        <SplitsY />
+                      </SerializableShape>
+                      <SerializableShape>
+                        <Name>ShapeId 0 0 0</Name>
+                        <MaterialName>Default</MaterialName>
+                        <Level>5</Level>
+                        <UId>183</UId>
+                        <Groups>-1</Groups>
+                        <Isolated>0</Isolated>
+                        <BBox>
+                          <Min>
+                            <X>0.414112</X>
+                            <Y>0.029165</Y>
+                            <Z>0</Z>
+                          </Min>
+                          <Max>
+                            <X>0.433105</X>
+                            <Y>0.179761</Y>
+                            <Z>0.3</Z>
+                          </Max>
+                          <Size>
+                            <X>0.0189929</X>
+                            <Y>0.150596</Y>
+                            <Z>0.3</Z>
+                          </Size>
+                        </BBox>
+                        <Label>
+                          <LabelID>0</LabelID>
+                          <LabelName>wall1</LabelName>
+                        </Label>
+                        <Children />
+                        <SplitsX />
+                        <SplitsY />
+                      </SerializableShape>
+                    </Children>
+                    <SplitsX>
+                      <float>0.355754</float>
+                      <float>0.414112</float>
+                    </SplitsX>
+                    <SplitsY />
+                  </SerializableShape>
+                  <SerializableShape>
+                    <Name>ShapeId 0 0 0</Name>
+                    <MaterialName>Default</MaterialName>
+                    <Level>4</Level>
+                    <UId>175</UId>
+                    <Groups>-1</Groups>
+                    <Isolated>0</Isolated>
+                    <BBox>
+                      <Min>
+                        <X>0.318113</X>
+                        <Y>0.179761</Y>
+                        <Z>0</Z>
+                      </Min>
+                      <Max>
+                        <X>0.433105</X>
+                        <Y>0.197916</Y>
+                        <Z>0.3</Z>
+                      </Max>
+                      <Size>
+                        <X>0.114992</X>
+                        <Y>0.0181554</Y>
+                        <Z>0.3</Z>
+                      </Size>
+                    </BBox>
+                    <Label>
+                      <LabelID>0</LabelID>
+                      <LabelName>wall1</LabelName>
+                    </Label>
+                    <Children />
+                    <SplitsX />
+                    <SplitsY />
+                  </SerializableShape>
+                </Children>
+                <SplitsX />
+                <SplitsY>
+                  <float>0.029165</float>
+                  <float>0.179761</float>
+                </SplitsY>
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>162</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.433105</X>
+                    <Y>0</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.537868</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.104762</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>door1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>163</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.537868</X>
+                    <Y>0</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.616327</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.078459</X>
+                    <Y>0.197916</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>unlabeled</LabelName>
+                </Label>
+                <Children>
+                  <SerializableShape>
+                    <Name>ShapeId 0 0 0</Name>
+                    <MaterialName>Default</MaterialName>
+                    <Level>4</Level>
+                    <UId>176</UId>
+                    <Groups>-1</Groups>
+                    <Isolated>0</Isolated>
+                    <BBox>
+                      <Min>
+                        <X>0.537868</X>
+                        <Y>0</Y>
+                        <Z>0</Z>
+                      </Min>
+                      <Max>
+                        <X>0.616327</X>
+                        <Y>0.029165</Y>
+                        <Z>0.3</Z>
+                      </Max>
+                      <Size>
+                        <X>0.078459</X>
+                        <Y>0.029165</Y>
+                        <Z>0.3</Z>
+                      </Size>
+                    </BBox>
+                    <Label>
+                      <LabelID>0</LabelID>
+                      <LabelName>wall1</LabelName>
+                    </Label>
+                    <Children />
+                    <SplitsX />
+                    <SplitsY />
+                  </SerializableShape>
+                  <SerializableShape>
+                    <Name>ShapeId 0 0 0</Name>
+                    <MaterialName>Default</MaterialName>
+                    <Level>4</Level>
+                    <UId>177</UId>
+                    <Groups>-1</Groups>
+                    <Isolated>0</Isolated>
+                    <BBox>
+                      <Min>
+                        <X>0.537868</X>
+                        <Y>0.029165</Y>
+                        <Z>0</Z>
+                      </Min>
+                      <Max>
+                        <X>0.616327</X>
+                        <Y>0.179761</Y>
+                        <Z>0.3</Z>
+                      </Max>
+                      <Size>
+                        <X>0.078459</X>
+                        <Y>0.150596</Y>
+                        <Z>0.3</Z>
+                      </Size>
+                    </BBox>
+                    <Label>
+                      <LabelID>0</LabelID>
+                      <LabelName>unlabeled</LabelName>
+                    </Label>
+                    <Children>
+                      <SerializableShape>
+                        <Name>ShapeId 0 0 0</Name>
+                        <MaterialName>Default</MaterialName>
+                        <Level>5</Level>
+                        <UId>184</UId>
+                        <Groups>-1</Groups>
+                        <Isolated>0</Isolated>
+                        <BBox>
+                          <Min>
+                            <X>0.537868</X>
+                            <Y>0.029165</Y>
+                            <Z>0</Z>
+                          </Min>
+                          <Max>
+                            <X>0.557968</X>
+                            <Y>0.179761</Y>
+                            <Z>0.3</Z>
+                          </Max>
+                          <Size>
+                            <X>0.0201008</X>
+                            <Y>0.150596</Y>
+                            <Z>0.3</Z>
+                          </Size>
+                        </BBox>
+                        <Label>
+                          <LabelID>0</LabelID>
+                          <LabelName>wall1</LabelName>
+                        </Label>
+                        <Children />
+                        <SplitsX />
+                        <SplitsY />
+                      </SerializableShape>
+                      <SerializableShape>
+                        <Name>ShapeId 0 0 0</Name>
+                        <MaterialName>Default</MaterialName>
+                        <Level>5</Level>
+                        <UId>185</UId>
+                        <Groups>-1</Groups>
+                        <Isolated>0</Isolated>
+                        <BBox>
+                          <Min>
+                            <X>0.557968</X>
+                            <Y>0.029165</Y>
+                            <Z>0</Z>
+                          </Min>
+                          <Max>
+                            <X>0.616327</X>
+                            <Y>0.179761</Y>
+                            <Z>0.3</Z>
+                          </Max>
+                          <Size>
+                            <X>0.0583582</X>
+                            <Y>0.150596</Y>
+                            <Z>0.3</Z>
+                          </Size>
+                        </BBox>
+                        <Label>
+                          <LabelID>0</LabelID>
+                          <LabelName>window5</LabelName>
+                        </Label>
+                        <Children />
+                        <SplitsX />
+                        <SplitsY />
+                      </SerializableShape>
+                    </Children>
+                    <SplitsX>
+                      <float>0.557968</float>
+                    </SplitsX>
+                    <SplitsY />
+                  </SerializableShape>
+                  <SerializableShape>
+                    <Name>ShapeId 0 0 0</Name>
+                    <MaterialName>Default</MaterialName>
+                    <Level>4</Level>
+                    <UId>178</UId>
+                    <Groups>-1</Groups>
+                    <Isolated>0</Isolated>
+                    <BBox>
+                      <Min>
+                        <X>0.537868</X>
+                        <Y>0.179761</Y>
+                        <Z>0</Z>
+                      </Min>
+                      <Max>
+                        <X>0.616327</X>
+                        <Y>0.197916</Y>
+                        <Z>0.3</Z>
+                      </Max>
+                      <Size>
+                        <X>0.078459</X>
+                        <Y>0.0181554</Y>
+                        <Z>0.3</Z>
+                      </Size>
+                    </BBox>
+                    <Label>
+                      <LabelID>0</LabelID>
+                      <LabelName>wall1</LabelName>
+                    </Label>
+                    <Children />
+                    <SplitsX />
+                    <SplitsY />
+                  </SerializableShape>
+                </Children>
+                <SplitsX />
+                <SplitsY>
+                  <float>0.029165</float>
+                  <float>0.179761</float>
+                </SplitsY>
+              </SerializableShape>
+            </Children>
+            <SplitsX>
+              <float>0.433105</float>
+              <float>0.537868</float>
+            </SplitsX>
+            <SplitsY />
+          </SerializableShape>
+        </Children>
+        <SplitsX>
+          <float>0.0660294</float>
+          <float>0.117372</float>
+          <float>0.26677</float>
+          <float>0.318113</float>
+          <float>0.616327</float>
+          <float>0.672114</float>
+          <float>0.723457</float>
+          <float>0.872855</float>
+          <float>0.924198</float>
+        </SplitsX>
+        <SplitsY />
+      </SerializableShape>
+      <SerializableShape>
+        <Name>ShapeId 0 0 0</Name>
+        <MaterialName>Default</MaterialName>
+        <Level>1</Level>
+        <UId>16</UId>
+        <Groups>-1</Groups>
+        <Isolated>0</Isolated>
+        <BBox>
+          <Min>
+            <X>0</X>
+            <Y>0.197916</Y>
+            <Z>0</Z>
+          </Min>
+          <Max>
+            <X>1</X>
+            <Y>0.220857</Y>
+            <Z>0.3</Z>
+          </Max>
+          <Size>
+            <X>1</X>
+            <Y>0.0229404</Y>
+            <Z>0.3</Z>
+          </Size>
+        </BBox>
+        <Label>
+          <LabelID>0</LabelID>
+          <LabelName>wall1</LabelName>
+        </Label>
+        <Children />
+        <SplitsX />
+        <SplitsY />
+      </SerializableShape>
+      <SerializableShape>
+        <Name>ShapeId 0 0 0</Name>
+        <MaterialName>Default</MaterialName>
+        <Level>1</Level>
+        <UId>17</UId>
+        <Groups>-1</Groups>
+        <Isolated>0</Isolated>
+        <BBox>
+          <Min>
+            <X>0</X>
+            <Y>0.220857</Y>
+            <Z>0</Z>
+          </Min>
+          <Max>
+            <X>1</X>
+            <Y>0.384653</Y>
+            <Z>0.3</Z>
+          </Max>
+          <Size>
+            <X>1</X>
+            <Y>0.163796</Y>
+            <Z>0.3</Z>
+          </Size>
+        </BBox>
+        <Label>
+          <LabelID>0</LabelID>
+          <LabelName>unlabeled</LabelName>
+        </Label>
+        <Children>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>261</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.0659832</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0659832</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>262</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.0659832</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.117384</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window2</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>263</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.117384</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.266749</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.149364</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>264</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.266749</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.31815</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window2</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>265</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.31815</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.373919</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0557691</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>266</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.373919</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.616308</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.242389</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>unlabeled</LabelName>
+            </Label>
+            <Children>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>272</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.373919</X>
+                    <Y>0.220857</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.425302</X>
+                    <Y>0.384653</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513832</X>
+                    <Y>0.163796</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window2</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>273</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.425302</X>
+                    <Y>0.220857</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.437576</X>
+                    <Y>0.384653</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0122736</X>
+                    <Y>0.163796</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>274</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.437576</X>
+                    <Y>0.220857</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.488977</X>
+                    <Y>0.384653</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0514013</X>
+                    <Y>0.163796</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window2</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>275</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.488977</X>
+                    <Y>0.220857</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.501251</X>
+                    <Y>0.384653</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0122736</X>
+                    <Y>0.163796</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>276</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.501251</X>
+                    <Y>0.220857</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.552652</X>
+                    <Y>0.384653</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0514013</X>
+                    <Y>0.163796</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window2</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>277</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.552652</X>
+                    <Y>0.220857</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.564926</X>
+                    <Y>0.384653</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0122737</X>
+                    <Y>0.163796</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>278</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.564926</X>
+                    <Y>0.220857</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.616308</X>
+                    <Y>0.384653</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513825</X>
+                    <Y>0.163796</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window2</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+            </Children>
+            <SplitsX>
+              <float>0.425302</float>
+              <float>0.437576</float>
+              <float>0.488977</float>
+              <float>0.501251</float>
+              <float>0.552652</float>
+              <float>0.564926</float>
+            </SplitsX>
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>267</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.616308</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.672077</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0557691</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>268</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.672077</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.723479</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window2</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>269</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.723479</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.872843</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.149364</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>270</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.872843</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.924244</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window2</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>271</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.924244</X>
+                <Y>0.220857</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>1</X>
+                <Y>0.384653</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.075756</X>
+                <Y>0.163796</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+        </Children>
+        <SplitsX>
+          <float>0.0659832</float>
+          <float>0.117384</float>
+          <float>0.266749</float>
+          <float>0.31815</float>
+          <float>0.373919</float>
+          <float>0.616308</float>
+          <float>0.672077</float>
+          <float>0.723479</float>
+          <float>0.872843</float>
+          <float>0.924244</float>
+        </SplitsX>
+        <SplitsY />
+      </SerializableShape>
+      <SerializableShape>
+        <Name>ShapeId 0 0 0</Name>
+        <MaterialName>Default</MaterialName>
+        <Level>1</Level>
+        <UId>18</UId>
+        <Groups>-1</Groups>
+        <Isolated>0</Isolated>
+        <BBox>
+          <Min>
+            <X>0</X>
+            <Y>0.384653</Y>
+            <Z>0</Z>
+          </Min>
+          <Max>
+            <X>1</X>
+            <Y>0.446984</Y>
+            <Z>0.3</Z>
+          </Max>
+          <Size>
+            <X>1</X>
+            <Y>0.0623306</Y>
+            <Z>0.3</Z>
+          </Size>
+        </BBox>
+        <Label>
+          <LabelID>0</LabelID>
+          <LabelName>wall1</LabelName>
+        </Label>
+        <Children />
+        <SplitsX />
+        <SplitsY />
+      </SerializableShape>
+      <SerializableShape>
+        <Name>ShapeId 0 0 0</Name>
+        <MaterialName>Default</MaterialName>
+        <Level>1</Level>
+        <UId>19</UId>
+        <Groups>-1</Groups>
+        <Isolated>0</Isolated>
+        <BBox>
+          <Min>
+            <X>0</X>
+            <Y>0.446984</Y>
+            <Z>0</Z>
+          </Min>
+          <Max>
+            <X>1</X>
+            <Y>0.564791</Y>
+            <Z>0.3</Z>
+          </Max>
+          <Size>
+            <X>1</X>
+            <Y>0.117808</Y>
+            <Z>0.3</Z>
+          </Size>
+        </BBox>
+        <Label>
+          <LabelID>0</LabelID>
+          <LabelName>unlabeled</LabelName>
+        </Label>
+        <Children>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>75</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.0659832</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0659832</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>76</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.0659832</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.117384</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>77</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.117384</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.266749</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.149364</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>78</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.266749</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.31815</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>79</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.31815</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.373919</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0557691</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>80</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.373919</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.616308</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.242389</X>
+                <Y>0.117807</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>unlabeled</LabelName>
+            </Label>
+            <Children>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>115</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.425302</X>
+                    <Y>0.446984</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.437576</X>
+                    <Y>0.564791</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0122736</X>
+                    <Y>0.117808</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>116</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.437576</X>
+                    <Y>0.446984</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.488977</X>
+                    <Y>0.564791</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0514013</X>
+                    <Y>0.117808</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>117</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.488977</X>
+                    <Y>0.446984</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.501251</X>
+                    <Y>0.564791</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0122736</X>
+                    <Y>0.117808</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>118</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.501251</X>
+                    <Y>0.446984</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.552652</X>
+                    <Y>0.564791</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0514013</X>
+                    <Y>0.117808</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>119</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.552652</X>
+                    <Y>0.446984</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.564926</X>
+                    <Y>0.564791</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0122737</X>
+                    <Y>0.117808</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>wall1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>120</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.564926</X>
+                    <Y>0.446984</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.616308</X>
+                    <Y>0.564791</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513825</X>
+                    <Y>0.117807</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+              <SerializableShape>
+                <Name>ShapeId 0 0 0</Name>
+                <MaterialName>Default</MaterialName>
+                <Level>3</Level>
+                <UId>121</UId>
+                <Groups>-1</Groups>
+                <Isolated>0</Isolated>
+                <BBox>
+                  <Min>
+                    <X>0.373919</X>
+                    <Y>0.446984</Y>
+                    <Z>0</Z>
+                  </Min>
+                  <Max>
+                    <X>0.425302</X>
+                    <Y>0.564791</Y>
+                    <Z>0.3</Z>
+                  </Max>
+                  <Size>
+                    <X>0.0513832</X>
+                    <Y>0.117807</Y>
+                    <Z>0.3</Z>
+                  </Size>
+                </BBox>
+                <Label>
+                  <LabelID>0</LabelID>
+                  <LabelName>window1</LabelName>
+                </Label>
+                <Children />
+                <SplitsX />
+                <SplitsY />
+              </SerializableShape>
+            </Children>
+            <SplitsX>
+              <float>0.425302</float>
+              <float>0.437576</float>
+              <float>0.488977</float>
+              <float>0.501251</float>
+              <float>0.552652</float>
+              <float>0.564926</float>
+            </SplitsX>
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>81</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.616308</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.672077</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0557691</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>82</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.672077</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.723479</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>83</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.723479</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.872843</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.149364</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>84</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.872843</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>0.924244</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.0514013</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>window1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+          <SerializableShape>
+            <Name>ShapeId 0 0 0</Name>
+            <MaterialName>Default</MaterialName>
+            <Level>2</Level>
+            <UId>85</UId>
+            <Groups>-1</Groups>
+            <Isolated>0</Isolated>
+            <BBox>
+              <Min>
+                <X>0.924244</X>
+                <Y>0.446984</Y>
+                <Z>0</Z>
+              </Min>
+              <Max>
+                <X>1</X>
+                <Y>0.564791</Y>
+                <Z>0.3</Z>
+              </Max>
+              <Size>
+                <X>0.075756</X>
+                <Y>0.117808</Y>
+                <Z>0.3</Z>
+              </Size>
+            </BBox>
+            <Label>
+              <LabelID>0</LabelID>
+              <LabelName>wall1</LabelName>
+            </Label>
+            <Children />
+            <SplitsX />
+            <SplitsY />
+          </SerializableShape>
+        </Children>
+        <SplitsX>
+          <float>0.0659832</float>
+          <float>0.117384</float>
+          <float>0.266749</float>
+          <float>0.31815</float>
+          <float>0.373919</float>
+          <float>0.616308</float>
+          <float>0.672077</float>
+          <float>0.723479</float>
+          <float>0.872843</float>
+          <float>0.924244</float>
+        </SplitsX>
+        <SplitsY />
+      </SerializableShape>
+      <SerializableShape>
+        <Name>ShapeId 0 0 0</Name>
+        <MaterialName>Default</MaterialName>
+        <Level>1</Level>
+        <UId>20</UId>
+        <Groups>-1</Groups>
+        <Isolated>0</Isolated>
+        <BBox>
+          <Min>
+            <X>0</X>
+            <Y>0.564791</Y>
+            <Z>0</Z>
+          </Min>
+          <Max>
+            <X>1</X>
+            <Y>0.60389</Y>
+            <Z>0.3</Z>
+          </Max>
+          <Size>
+            <X>1</X>
+            <Y>0.0390991</Y>
+            <Z>0.3</Z>
+          </Size>
+        </BBox>
+        <Label>
+          <LabelID>0</LabelID>
+          <LabelName>wall1</LabelName>
+        </Label>
+        <Children />
+        <SplitsX />
+        <SplitsY />
+      </SerializableShape>
+    </Children>
+    <SplitsX />
+    <SplitsY>
+      <float>0.564791</float>
+      <float>0.446984</float>
+      <float>0.384653</float>
+      <float>0.220857</float>
+      <float>0.197916</float>
+    </SplitsY>
+  </MainShape>
+  <FacadeFilename>NR07031.png</FacadeFilename>
+</SerializableFacade>

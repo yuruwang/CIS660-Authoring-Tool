@@ -1,0 +1,19 @@
+﻿  vec.cpp
+  ProceduralFacade.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(134): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(216): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(219): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(227): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(229): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+  ProcedrualFacadeCmd.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacadecmd.h(6): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  PrimitiveInstanceNode.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\primitiveinstancenode.h(8): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  PluginMain.cpp
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacadecmd.h(6): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\primitiveinstancenode.h(8): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  Generating Code...
+e:\cggt\cis660\authoring tool\mayaplugin\cis660-authoring-tool\inverseproceduralfacade\inverseproceduralfacade\proceduralfacade.cpp(173): warning C4715: 'Rule::applyTo': not all control paths return a value
+     Creating library E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\x64\Debug\InverseProceduralFacade.lib and object E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\x64\Debug\InverseProceduralFacade.exp
+  InverseProceduralFacade.vcxproj -> E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\x64\Debug\InverseProceduralFacade.dll
+  InverseProceduralFacade.vcxproj -> E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\x64\Debug\InverseProceduralFacade.pdb (Full PDB)

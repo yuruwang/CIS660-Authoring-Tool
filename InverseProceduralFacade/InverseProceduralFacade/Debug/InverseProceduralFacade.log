@@ -1,3 +1,1 @@
-﻿  main.cpp
-  InverseProceduralFacade.vcxproj -> E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\Debug\InverseProceduralFacade.exe
-  InverseProceduralFacade.vcxproj -> E:\CGGT\CIS660\Authoring tool\MayaPlugin\CIS660-Authoring-Tool\InverseProceduralFacade\Debug\InverseProceduralFacade.pdb (Full PDB)
+﻿Foundation.lib(Foundation.dll) : fatal error LNK1112: module machine type 'x64' conflicts with target machine type 'X86'
