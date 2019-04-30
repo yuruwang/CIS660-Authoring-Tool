@@ -138,7 +138,10 @@ namespace Layout {
 	// New :  New Group inserted
 	// NewExpired: Old group was expired new added over it.
 	// Fail: Failed to insert Group
-	enum InsertType {OldNode, NewNode, NewExpired, Fail}; 
+	enum InsertType {OldNode, NewNode, NewExpired, Fail};
+	// BranchSplitPair is the branchNode and the index of the split line
+	// that a nonTerminal group is split by
+	typedef  std::pair<std::shared_ptr<const Node>, SplitItPair> BranchSplitPair;
 
 /* BranchNode is a type of node used for nonTerminal regions with children.  It
  * has one new container to hold all the groups that would be broken by this
@@ -159,7 +162,55 @@ namespace Layout {
 			// throws exception if group not found
 			bool removeGroup(WeakPair group);
 	};
-
+	// Pair of Efloats making up a min max along a dimension X or Y
+	typedef   std::pair<Efloat, Efloat> minMaxPr;
+	// LineSegment encodes a line segment that would be part of a split line.
+	// An important observation is that the splitlines that divide groups are never
+	// on the bounding box, they are always 
+	struct LineSegment {
+		minMaxPr  pr; // min and max values of the line say ymin, ymax.
+		Efloat transverseVal; // the one transverse value say x.
+		EVector::Axis  ax;  // the direction of min, max, say Y
+	};
+	
+/* ******************************************************************************************************************
+ * LineIntersects tests if a splitLine within a spatialLocation GroupPair splits a
+ * combined group. The group has a non zero width and a height. It also tests whether a childNode is 
+ * overlapping with the group, where the group is within the location 
+ ********************************************************************************************************************/
+	class LineIntersects {
+		private:
+			// minMap x, y dimensions of spatial Node bounding box
+			minMaxPr xLocPr, yLocPr;
+			// axis of GroupNode
+			EVector::Axis splitDir;
+			// the size of the group  Node
+			// group lowerLeft;
+			// minMax pairs of the group Node
+			const minMaxPr xGroup, yGroup; 
+			minMaxPr currentGroup;
+		public:
+			// initialize all variables
+			LineIntersects(Layout::GroupPair& StartLocation, Layout::GroupPair& NTgroup);
+			// updates the StartLocation Group
+			void updateSearchCorner(Layout::GroupPair& loc);
+			// anyOverlaps determins if any splitlines within startLocation
+			// could overlap with inputted nonterminal group
+			bool anyOverlaps() const;
+			// provide the size of the location and this will return true
+			// if the group is contained within location.  If it not within
+			// the location then one needs to look to the parent for a
+			// startGroup.
+			bool groupWithinLocation() const; 
+			// used to get whether a child node with a minMaxPr
+			// along current splitDir overlaps with NTgroup
+			bool operator()(const minMaxPr pr) const;
+			// determines whether a splitline verlaps with current
+			// NTgroup.  The splitLine is within StartLocation group
+			bool operator()(const Efloat& splitLine) const;
+			// returns current Axis
+			EVector::Axis axis() const;
+	};
 /********************************************************************************************************
  * LeafNode holds the leaf node nodes these store all the groups that have an
  * origin in the lower left corner
@@ -231,8 +282,34 @@ namespace Layout {
 
 // provide a child and an absolute LL coordinate, and this finds the lower left
 // coordinate of the parent.
-	void   parentLLCorner(std::shared_ptr<const  Layout::Node> parent, std::shared_ptr<const Layout::Node> child, 
+	void   parentLLCorner(std::shared_ptr<const  Node> parent, std::shared_ptr<const Node> child, 
 				 EVector& minValueChild);
+/*******************************************************************************************************************
+ *      @func findContainingParent will find the branch Node that contains the
+ *      complete nonTerminal Group (groupPair), NTGroup.  It walks up the tree looking until it finds a
+ *       parest that contains the group.
+ *      @params[in]       currentLoc.  A grouppair with a terminal node that to
+ *      		  	to begin searching.  Needs to start with a terminal
+ *      		  	node, so that it can walk up the spatial tree.
+ *      		  line is made with LineIntersects( currentLoc, NTgroup)
+ *       @return          The groupPair of the node containing the NTgroup
+ * *****************************************************************************************************************/
+ 
+	GroupPair    findContainingParent(GroupPair currentLoc, 
+				 LineIntersects& line);
+/******************************************************************************************************************
+ *      @func branchesWithOverlappingSplits finds all branches and the splitlines
+ *         	within the branch that has overlapping splits with a given
+ *         	Nonterminal group.  
+ *	@params[in]  current.  GroupPair of the parentNode in spatial
+ *			structure big enough to contain any possible split
+ *		     LineIntersect& line made with (parentGroup, NTGroup) and it
+ *		     	characterizes the overlap between the
+ *		     	NTGroup and the Current Group.
+ *	           vector<BranchSplitPairs> all the splitlines that overlap with
+ *	this group
+ *	*********************************************************************************************************/
+    void branchesWithOverlappingSplit(GroupPair currentLoc, LineIntersects& line,  std::vector<BranchSplitPair>& splits );
 
 /*******************************************************************************************************
  *   bool sameGroup(std::shared_ptr<const Node> a, std::shared_ptr<const Node>
@@ -273,7 +350,6 @@ namespace Layout {
 		// parse the XML Document
 		// by first opening the file
 		BottomUp( const char *);
-	private:
 		// holds all the grouped nodes that repeat more than once.  One copy per unique ID
 		// give this an index and it returns a GroupPair, a shared
 		// pointer to the group and the list of locations, the lower
@@ -283,6 +359,7 @@ namespace Layout {
 		std::shared_ptr<const Node> location;
 		// cross reference maps names to uids
 		nameMap    names;
+	private:
 		uIDType next;
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
