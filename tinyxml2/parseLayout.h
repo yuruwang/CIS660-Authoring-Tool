@@ -157,10 +157,10 @@ namespace Layout {
 			mutable std::vector<WeakMap> splitGroups;
 			// adds a WeakPair to the group;
 			// throws exception if expired group or failure
-			void addGroup(WeakPair group);
+			void addGroup(GroupPair group, SplitItPair);
 			// removes a group from the branchNode
 			// throws exception if group not found
-			bool removeGroup(WeakPair group);
+			bool removeGroup(GroupPair group, std::vector<int>::size_type );
 	};
 	// Pair of Efloats making up a min max along a dimension X or Y
 	typedef   std::pair<Efloat, Efloat> minMaxPr;
@@ -350,21 +350,27 @@ namespace Layout {
 		// parse the XML Document
 		// by first opening the file
 		BottomUp( const char *);
+		// holds the spatial data structure for the location of the NT and terminal regions
+		// cross reference maps names to uids
+		uIDType next;
+		nameMap    names;
 		// holds all the grouped nodes that repeat more than once.  One copy per unique ID
 		// give this an index and it returns a GroupPair, a shared
 		// pointer to the group and the list of locations, the lower
 		// left coordinate
 		GroupMap groups;
-		// holds the spatial data structure for the location of the NT and terminal regions
-		std::shared_ptr<const Node> location;
-		// cross reference maps names to uids
-		nameMap    names;
+		// this holds the locations of the root node together with its
+		// lower left location.
+		GroupPair location;
 	private:
-		uIDType next;
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
 		std::shared_ptr<const Node> XMLNode(XMLNodePr&& , std::weak_ptr<const Node> p,
 				const EVector& minVal, int level, nameMap& namesFound);
+		// initializeLocationTree  parses the XML file, finishes
+		// Location structure and established terminals in the groups
+		// and the names map
+		GroupPair initializeLocationTree(const char * filename);
 ///****************************************************************************************************
 // *          addNodeValue will just add the NodeValue to the nameMap; if
 //	    there is one there already, this returns the current one and

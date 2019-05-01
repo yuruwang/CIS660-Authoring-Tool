@@ -913,7 +913,7 @@ Layout::GroupMap::const_iterator Layout::BottomUp::addToGroupMap(
  * constructor
  * **********************************************************************************************************/
 
-Layout::BottomUp::BottomUp( const char * filename): next{0}
+Layout::GroupPair Layout::BottomUp::initializeLocationTree(const char * filename)
 {
 		tinyxml2::XMLDocument doc;
 		doc.LoadFile( filename);
@@ -927,9 +927,16 @@ Layout::BottomUp::BottomUp( const char * filename): next{0}
 			throw std::runtime_error("Doc did not read correctly");
 		}
 
-		EVector leftCorner(0, 0, 0);
-		location = XMLNode(std::move(pr), std::weak_ptr<const Node>(), leftCorner, 0, names);
-		for (unsigned n{ 1 }; n <= location->v->n/2; ++n)
+		return GroupPair(XMLNode(std::move(pr), 
+					std::weak_ptr<const Node>(), 
+					pr.second->min(), 0, names), pr.second ->min());
+}
+
+
+Layout::BottomUp::BottomUp( const char * filename): next{0}, names{}, groups{}, 
+	       location{initializeLocationTree(filename)}
+{
+		for (unsigned n{ 1 }; n <= location.first ->v->n/2; ++n)
 		{
 			addNTGroups(n);
 		};
