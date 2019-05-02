@@ -108,12 +108,56 @@ Layout::Node::Node(const EVector& sz, const EVector::Axis sd,
 					splits{std::move(ss)},
 					parent{p}
 {}
-
+// Branch Nodes always have nonempty splits
 Layout::BranchNode::BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
 					std::weak_ptr<const Node> p, std::shared_ptr<NodeValue> v ):
-					Node(sz, sd, std::move(ss),  p, v)
+					Node(sz, sd, std::move(ss),  p, v), splitGroups{std::vector<WeakMap>(splits.size())}
 {}
 
+// adds a weak reference to the groupNode split by the
+			// line.  LL corner is not needed so not stored
+			// throws exception if expired group or failure
+void Layout::BranchNode::addGroup(std::shared_ptr<const Node> NTGroup, SplitItPair pr)
+{
+	typedef std::vector<WeakMap>::size_type WS;
+	WS curr { static_cast<WS>( pr.first - splits.begin())};
+	WS last  { static_cast<WS>(pr.second - splits.begin())};
+	for (; curr < last; ++curr)
+	{
+		WeakMap& thisMap = splitGroups[curr];
+		std::weak_ptr<const Node> weakVal { NTGroup};
+		WeakMap::const_iterator it {thisMap.insert(
+				    std::make_pair(NTGroup -> v ->uid, weakVal))};
+		if ( it == thisMap.end()) {
+			throw std::runtime_error("failed to insert group in splitGroups");
+		}
+	}
+
+}
+
+			// removes a group from the branchNode
+			// true if found /false if not found; throws exception
+			// if expired
+bool Layout::BranchNode::removeGroup(std::shared_ptr<const Node> NTGroup, std::vector<int>::size_type curr)
+{
+	WeakMap& thisMap = splitGroups[curr];
+	typedef WeakMap::const_iterator WIT;
+	std::pair<WIT, WIT> pr { thisMap.equal_range(NTGroup -> v -> uid)};
+	bool found {false};
+	for ( ; pr.first != pr.second; ++pr.first)
+	{
+		if (pr.first ->second.expired()){
+			throw std::runtime_error("expired pointer to Group Node in splits");
+		}
+		if (pr.first ->second.lock() == NTGroup)
+		{
+			thisMap.erase(pr.first);
+			found = true;
+			break;
+		}
+	}
+	return found;
+}
 // strictly Overlap is true only if a and b share common points that are not on
 // the boundary
 bool  strictlyOverlap( const Layout::minMaxPr a, const Layout::minMaxPr b)
@@ -841,13 +885,16 @@ std::shared_ptr<const Layout::Node> Layout::BottomUp::copyTree( std::shared_ptr<
 	else{ 
 		thisNode = std::make_shared<BranchNode>(otherNode ->size, otherNode ->splitDir, std::move(splits),
 				    p, v);
+		thisNode->v->n = 0; // reset to start counting terminals as a check.
 	}
 	EVector childMin {minVal};
 	std::vector<Efloat>::size_type indx {0};
 	if ( thisNode -> splitDir == EVector::Axis::X) {
 		for (std::shared_ptr<const Node> child: otherNode ->children)
 		{
-			thisNode ->children.push_back( copyTree(child, childMin, thisNode));
+			std::shared_ptr<const Node> x{ copyTree(child, childMin, thisNode) };
+			thisNode->v->n += x->v->n;
+			thisNode ->children.push_back( x);
 			if (indx < thisNode -> splits.size()){
 				childMin.x = minVal.x + thisNode->splits[indx++];
 			}
@@ -856,11 +903,16 @@ std::shared_ptr<const Layout::Node> Layout::BottomUp::copyTree( std::shared_ptr<
 	else {
 		for (std::shared_ptr<const Node> child: otherNode ->children)
 		{
-			thisNode ->children.push_back( copyTree(child, childMin, thisNode));
+			std::shared_ptr<const Node> x{ copyTree(child, childMin, thisNode) };
+			thisNode->v->n += x->v->n;
+			thisNode ->children.push_back( x);
 			if (indx < thisNode -> splits.size()){
 				childMin.y = minVal.y + thisNode->splits[indx++];
 			}
 		}
+	}
+	if (thisNode -> v ->n != otherNode -> v ->n) {
+		throw std::runtime_error("Number of terminals does not match");
 	}
 	return thisNode;
 }

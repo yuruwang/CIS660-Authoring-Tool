@@ -103,7 +103,7 @@ namespace Layout {
 	// non const Node to pass partially formed nodes
 	typedef std::pair<std::shared_ptr<Node>, const EVector>  nGroupPair;
 	// List is list of Group Pairs;
-	typedef std::pair<std::weak_ptr<const Node>, EVector>  WeakPair;
+	//typedef std::pair<std::weak_ptr<const Node>, EVector>  WeakPair;
 	//childIT  is an iterator over the children of a Node
 	typedef std::vector<std::shared_ptr<const Node>>::const_iterator ChildIt;
 	typedef  std::pair<ChildIt, ChildIt>  ChildItPair; 
@@ -120,7 +120,7 @@ namespace Layout {
 	// WeakMap holds a hashtable of uIDTypes and a Group Pairs
 	// Each groupPair has the same NodeValue but a different Node itself.
 	typedef std::pair<GroupMap::const_iterator, GroupMap::const_iterator> GroupMapIt; 
-	typedef std::unordered_multimap<uIDType, WeakPair> WeakMap;
+	typedef std::unordered_multimap<uIDType, std::weak_ptr<const Node>> WeakMap;
 	// stores Groups indexed by their YWidth.  The YWidth is already grouped
 	// by Xwidth. At one location there should only be one group that has
 	// the same X and Y width.  Hence this is a map, not a multimap
@@ -155,12 +155,14 @@ namespace Layout {
 					std::weak_ptr<const Node> p,
 					std::shared_ptr<NodeValue> v); 
 			mutable std::vector<WeakMap> splitGroups;
-			// adds a WeakPair to the group;
-			// throws exception if expired group or failure
-			void addGroup(GroupPair group, SplitItPair);
+			// adds a weak reference to the groupNode split by the
+			// line.  LL corner is not needed so not stored
+			// throws exception if failed to insert
+			void addGroup(std::shared_ptr<const Node> NTGroup, SplitItPair);
 			// removes a group from the branchNode
-			// throws exception if group not found
-			bool removeGroup(GroupPair group, std::vector<int>::size_type );
+			// true if found /false if not found; throws exception
+			// if expired
+			bool removeGroup(std::shared_ptr<const Node> NTGroup, std::vector<int>::size_type );
 	};
 	// Pair of Efloats making up a min max along a dimension X or Y
 	typedef   std::pair<Efloat, Efloat> minMaxPr;
@@ -350,6 +352,10 @@ namespace Layout {
 		// parse the XML Document
 		// by first opening the file
 		BottomUp( const char *);
+		// this allows one to copy a BottomUp structure.  The copy does
+		// not refer to any nodes in the original so original can be
+		// changed or deleted and copy remains intact.  This allows one
+		// to delete split groups in copy without affecting original.
 		BottomUp( const BottomUp& );
 		// holds the spatial data structure for the location of the NT and terminal regions
 		// cross reference maps names to uids
