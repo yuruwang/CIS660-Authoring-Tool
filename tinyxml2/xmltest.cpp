@@ -317,7 +317,9 @@ int main( int argc, const char ** argv )
 
 	if ( argc > 1 ) {
 		clock_t startTime = clock();
-		Layout::BottomUp bu(argv[1]);
+		unique_ptr<Layout::BottomUp> bu (new Layout::BottomUp(argv[1]));
+		Layout::BottomUp copy(*bu);
+		bu = nullptr;
  		clock_t loadTime = clock();
 		printf( "Test file '%s' loaded. \n", argv[1]);
 		printf( "Load time=%u\n",   (unsigned)(loadTime - startTime) );

@@ -808,6 +808,66 @@ std::shared_ptr<const Layout::Node> Layout::BottomUp::XMLNode(Layout::XMLNodePr&
 	}
 	return thisNode;
 }
+
+
+// copyTree should make a copy of otherNode, meaning copy values not sharing th
+// same memory.
+std::shared_ptr<const Layout::Node> Layout::BottomUp::copyTree( std::shared_ptr<const Layout::Node>   otherNode, const EVector& minVal, 
+				std::weak_ptr< const Layout::Node> p)
+{
+	// copy values over
+	std::shared_ptr<NodeValue> v = std::make_shared<NodeValue>(*(otherNode -> v));
+	std::shared_ptr<Node> thisNode;
+	std::vector<Efloat> splits { otherNode->splits};
+	if ( v->terminal()) {
+		// update namesFound and if there is a prior value return it
+		GroupType  group{ addNodeValue(v, names)};
+		// leaf nodes hold the maps of all the groups that have an
+		// origin at the lower left corner
+		if (splits.size() != 0) {
+			throw std::runtime_error("splits should be zero");
+		}
+		std::shared_ptr<LeafNode> lf = std::make_shared<LeafNode>(otherNode -> size, otherNode ->splitDir, 
+				std::move(splits), p,  v);
+		GroupMap::const_iterator it {addToGroupMap(lf, minVal, group)};
+		// this adds the node itself as the first group stored in the
+		// Lower Left corner.
+		Layout::InsertType val{ lf ->addGroupToXYLocMap(lf)};
+		if (val!=InsertType::NewNode) {
+			throw std::runtime_error("This terminal added before or failed to add");
+		}
+		thisNode = lf;
+	}
+	else{ 
+		thisNode = std::make_shared<BranchNode>(otherNode ->size, otherNode ->splitDir, std::move(splits),
+				    p, v);
+	}
+	EVector childMin {minVal};
+	std::vector<Efloat>::size_type indx {0};
+	if ( thisNode -> splitDir == EVector::Axis::X) {
+		for (std::shared_ptr<const Node> child: otherNode ->children)
+		{
+			thisNode ->children.push_back( copyTree(child, childMin, thisNode));
+			if (indx < thisNode -> splits.size()){
+				childMin.x = minVal.x + thisNode->splits[indx++];
+			}
+		}
+	}
+	else {
+		for (std::shared_ptr<const Node> child: otherNode ->children)
+		{
+			thisNode ->children.push_back( copyTree(child, childMin, thisNode));
+			if (indx < thisNode -> splits.size()){
+				childMin.y = minVal.y + thisNode->splits[indx++];
+			}
+		}
+	}
+	return thisNode;
+}
+
+
+
+
 bool Layout::operator==(const Layout::NodeValue& a, const Layout::NodeValue& b)
 {
 	bool equal {a.uid == b.uid};
@@ -935,6 +995,15 @@ Layout::GroupPair Layout::BottomUp::initializeLocationTree(const char * filename
 
 Layout::BottomUp::BottomUp( const char * filename): next{0}, names{}, groups{}, 
 	       location{initializeLocationTree(filename)}
+{
+		for (unsigned n{ 1 }; n <= location.first ->v->n/2; ++n)
+		{
+			addNTGroups(n);
+		};
+}
+Layout::BottomUp::BottomUp( const Layout::BottomUp& other): next{0}, names{}, groups{}, 
+	       location{GroupPair(copyTree(other.location.first, other.location.second, std::weak_ptr<const Node>()), 
+			   other.location.second) }
 {
 		for (unsigned n{ 1 }; n <= location.first ->v->n/2; ++n)
 		{

@@ -350,6 +350,7 @@ namespace Layout {
 		// parse the XML Document
 		// by first opening the file
 		BottomUp( const char *);
+		BottomUp( const BottomUp& );
 		// holds the spatial data structure for the location of the NT and terminal regions
 		// cross reference maps names to uids
 		uIDType next;
@@ -371,6 +372,13 @@ namespace Layout {
 		// Location structure and established terminals in the groups
 		// and the names map
 		GroupPair initializeLocationTree(const char * filename);
+		// produces a copy of the location with all independent
+		// structures for the new BottomUp Node
+		// recursively add a new Node based on the otherNode but not
+		// using any structures in the otherNode.  It will link to the
+		// parent
+		std::shared_ptr<const Node> copyTree( std::shared_ptr<const Node>   otherNode, const EVector& minVal, 
+				std::weak_ptr< const Node> p); 
 ///****************************************************************************************************
 // *          addNodeValue will just add the NodeValue to the nameMap; if
 //	    there is one there already, this returns the current one and
