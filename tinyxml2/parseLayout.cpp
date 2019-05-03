@@ -113,11 +113,10 @@ Layout::BranchNode::BranchNode(const EVector& sz, const EVector::Axis sd, std::v
 					std::weak_ptr<const Node> p, std::shared_ptr<NodeValue> v ):
 					Node(sz, sd, std::move(ss),  p, v), splitGroups{std::vector<WeakMap>(splits.size())}
 {}
-
 // adds a weak reference to the groupNode split by the
 			// line.  LL corner is not needed so not stored
 			// throws exception if expired group or failure
-void Layout::BranchNode::addGroup(std::shared_ptr<const Node> NTGroup, SplitItPair pr)
+void Layout::BranchNode::addGroup(std::shared_ptr<const Layout::Node> NTGroup, Layout::SplitItPair pr) const
 {
 	typedef std::vector<WeakMap>::size_type WS;
 	WS curr { static_cast<WS>( pr.first - splits.begin())};
@@ -138,7 +137,7 @@ void Layout::BranchNode::addGroup(std::shared_ptr<const Node> NTGroup, SplitItPa
 			// removes a group from the branchNode
 			// true if found /false if not found; throws exception
 			// if expired
-bool Layout::BranchNode::removeGroup(std::shared_ptr<const Node> NTGroup, std::vector<int>::size_type curr)
+bool Layout::BranchNode::removeGroup(std::shared_ptr<const Layout::Node> NTGroup, std::vector<int>::size_type curr) const
 {
 	WeakMap& thisMap = splitGroups[curr];
 	typedef WeakMap::const_iterator WIT;
@@ -461,6 +460,57 @@ void Layout::branchesWithOverlappingSplit(Layout::GroupPair currentLoc, Layout::
 }
 
 
+// ll is the lower left of the terminal node starting location, ntGroup is the
+// non terminal group to insert into the splitlines
+void Layout::addNTGroupToSplitLines(Layout::GroupPair ll, Layout::GroupPair ntGroup)
+{
+	// get the line intersects class to determine overlaps and split lines 
+	Layout::LineIntersects  line( ll, ntGroup);
+	Layout::GroupPair  parent {Layout::findContainingParent(ll, line)};
+	std::vector<Layout::BranchSplitPair> splits;
+	// find all the split lines
+	Layout::branchesWithOverlappingSplit(parent, line, splits);
+	for ( Layout::BranchSplitPair pr : splits)
+	{
+		std::shared_ptr<const Layout::BranchNode> br { 
+			std::dynamic_pointer_cast<const Layout::BranchNode>(pr.first)};
+		if (br == nullptr) 
+		{ 
+			throw std::runtime_error("dynamic cast failed to get branch Node");
+		}
+		br ->addGroup( ntGroup.first, pr.second);
+	}
+}
+void Layout::removeNTGroupFromSplitLines( Layout::GroupPair ll, Layout::GroupPair ntGroup)
+{
+	// get the line intersects class to determine overlaps and split lines 
+	Layout::LineIntersects  line( ll, ntGroup);
+	Layout::GroupPair  parent {Layout::findContainingParent(ll, line)};
+	std::vector<Layout::BranchSplitPair> splits;
+	// find all the split lines
+	Layout::branchesWithOverlappingSplit(parent, line, splits);
+	for ( Layout::BranchSplitPair pr : splits)
+	{
+		std::shared_ptr<const Layout::BranchNode> br { 
+			std::dynamic_pointer_cast<const Layout::BranchNode>(pr.first)};
+		if (br == nullptr) 
+		{ 
+			throw std::runtime_error("dynamic cast failed to get branch Node");
+		}
+
+		typedef std::vector<Efloat>::size_type ES;
+		ES curr { static_cast<ES>( pr.second.first - br ->splits.begin())};
+		ES last  { static_cast<ES>(pr.second.second - br->splits.begin())};
+		for (; curr < last; ++curr)
+		{
+			bool success {br -> removeGroup(ntGroup.first, curr)};
+			if (!success)
+			{
+				throw std::runtime_error("failed to remove NT Group");
+			}
+		}
+	}
+}
 
 
 Layout::LeafNode::LeafNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
@@ -1084,9 +1134,6 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		++second;
 		// one element so delete
 		if (second == pr.second) {
-			if (pr.first == groups.end()) {
-				throw std::runtime_error("No groups found when there should have been 1 found");
-			}
 		    	nameMap::iterator  nameit = names.find( pr.first -> second.first -> v -> name);
 		    	if (nameit == names.end())
 		    	{
@@ -1098,9 +1145,13 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 					                                    StartSearch,
 				                            pr.first -> second.second)};
 		    	bool success {llcorner ->removeFromXYLocMap(pr.first ->second.first)};
-		    	if (!success){
+		    	if (!success)
+			{
 			    throw std::runtime_error("failed to remove node in XY Location map");
 		    	}
+				// remove from all the splitlines
+				removeNTGroupFromSplitLines( GroupPair( llcorner, pr.first ->second.second) , 
+					                                 pr.first ->second);
 		    	groups.erase(pr.first);
 		}
 	}
@@ -1354,6 +1405,9 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 					}
 					addToGroupMap( NewGroupPr.first, 
 							NewGroupPr.second, grouptype);
+					// add group to all split lines
+					addNTGroupToSplitLines( GroupPair( thisCorner, it -> second.second), 
+							NewGroupPr); 
 					break;
 				case NewExpired:
 					if (curr == next) {

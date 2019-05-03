@@ -153,17 +153,19 @@ namespace Layout {
 	struct BranchNode :Node {
 		        BranchNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss, 
 					std::weak_ptr<const Node> p,
-					std::shared_ptr<NodeValue> v); 
+					std::shared_ptr<NodeValue> v);
+
 			mutable std::vector<WeakMap> splitGroups;
 			// adds a weak reference to the groupNode split by the
 			// line.  LL corner is not needed so not stored
 			// throws exception if failed to insert
-			void addGroup(std::shared_ptr<const Node> NTGroup, SplitItPair);
+			void addGroup(std::shared_ptr<const Node> NTGroup, SplitItPair) const;
 			// removes a group from the branchNode
 			// true if found /false if not found; throws exception
 			// if expired
-			bool removeGroup(std::shared_ptr<const Node> NTGroup, std::vector<int>::size_type );
+			bool removeGroup(std::shared_ptr<const Node> NTGroup, std::vector<int>::size_type ) const;
 	};
+
 	// Pair of Efloats making up a min max along a dimension X or Y
 	typedef   std::pair<Efloat, Efloat> minMaxPr;
 	// LineSegment encodes a line segment that would be part of a split line.
@@ -311,7 +313,24 @@ namespace Layout {
  *	           vector<BranchSplitPairs> all the splitlines that overlap with
  *	this group
  *	*********************************************************************************************************/
-    void branchesWithOverlappingSplit(GroupPair currentLoc, LineIntersects& line,  std::vector<BranchSplitPair>& splits );
+
+	void branchesWithOverlappingSplit(GroupPair currentLoc, LineIntersects& line,  std::vector<BranchSplitPair>& splits );
+/******************************************************************************************************************************
+ * @func      addNTGroupToSplitLines will insert a non termial group into the
+ * 		spatial structure of nodes including a weak reference in all
+ * 		split lines in all branch nodes that split the group.
+ * @params[in]   GroupPair LL, the starting search direction 
+ *               GroupPair NT, the nonTerminal Group Node
+ *  ******************************************************************************************************************/
+	void addNTGroupToSplitLines(GroupPair ll, GroupPair ntGroup);
+/******************************************************************************************************************************
+ * @func      removeNTGroupFromSplitLines will remove  non termial group from all the split lines.
+ * 		in all branch nodes that split the group.
+ * @params[in]   GroupPair LL, the starting search direction.  Must be a
+ * 		  	GroupPair of a terminal group. 
+ *               GroupPair NT, the nonTerminal Group Node
+ *  ******************************************************************************************************************/
+	void removeNTGroupFromSplitLines(GroupPair ll, GroupPair ntGroup);
 
 /*******************************************************************************************************
  *   bool sameGroup(std::shared_ptr<const Node> a, std::shared_ptr<const Node>
