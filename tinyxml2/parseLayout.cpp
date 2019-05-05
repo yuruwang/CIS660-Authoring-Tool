@@ -579,7 +579,22 @@ void Layout::removeNTGroupFromSplitLines( Layout::GroupPair ll, Layout::GroupPai
 		}
 	}
 }
+// creates a LineSegment from an ntGroup; a line segmenti
+Layout::minMaxPr initializeLSPair ( const EVector& ll, EVector::Axis s, const EVector& size)
+{
+	return  (s == EVector::X) ? Layout::minMaxPr( ll.x, ll.x + size.x):
+		                 Layout::minMaxPr(ll.y, ll.y + size.y);
+}
 
+Efloat  initializeLSTransverseVal ( const EVector& ll, EVector::Axis s, const EVector& size)
+{
+	return  (s == EVector::X) ?  ll.y +  size.y: ll.x  + size.x;
+}
+
+Layout::LineSegment::LineSegment(const EVector& ll, EVector::Axis s, std::shared_ptr<const Node> ntGroup):
+ax{s}, pr{initializeLSPair(ll, ax, ntGroup->size)}, 
+	transverseVal {initializeLSTransverseVal( ll, ax, ntGroup -> size)} 
+{}
 
 Layout::LeafNode::LeafNode(const EVector& sz, const EVector::Axis sd, std::vector<Efloat>&& ss,
 					std::weak_ptr<const Node>  p,
@@ -1202,29 +1217,139 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		++second;
 		// one element so delete
 		if (second == pr.second) {
-		    	nameMap::iterator  nameit = names.find( pr.first -> second.first -> v -> name);
-		    	if (nameit == names.end())
-		    	{
-			    throw std::runtime_error("Name corresponding to UID not found");
-		    	}
-		    	names.erase(nameit);
-				EVector StartSearch = pr.first->second.second;
-		    	std::shared_ptr<const LeafNode>  llcorner { findLLNode(pr.first -> second.first , 
-					                                    StartSearch,
-				                            pr.first -> second.second)};
-		    	bool success {llcorner ->removeFromXYLocMap(pr.first ->second.first)};
-		    	if (!success)
-			{
-			    throw std::runtime_error("failed to remove node in XY Location map");
-		    	}
-				// remove from all the splitlines
-				removeNTGroupFromSplitLines( GroupPair( llcorner, pr.first ->second.second) , 
-					                                 pr.first ->second);
-		    	groups.erase(pr.first);
+			removeGroupPair(pr.first, true);
 		}
 	}
 }
 
+Layout::GroupMap::const_iterator Layout::BottomUp::removeGroupPair( Layout::GroupMap::const_iterator it, bool last)
+{
+	if ( last) 
+	{
+		nameMap::iterator  nameit = names.find( it -> second.first -> v -> name);
+		if (nameit == names.end())
+		{
+	    		throw std::runtime_error("Name corresponding to UID not found");
+		}
+		names.erase(nameit);
+	}
+	EVector StartSearch = it -> second.second;
+	std::shared_ptr<const LeafNode>  llcorner { findLLNode(it -> second.first , 
+			                                    StartSearch,
+		                            it -> second.second)};
+	bool success {llcorner ->removeFromXYLocMap(it ->second.first)};
+	if (!success)
+	{
+	    throw std::runtime_error("failed to remove node in XY Location map");
+	}
+	// remove from all the splitlines
+	removeNTGroupFromSplitLines( GroupPair( llcorner, it ->second.second) , 
+			                                 it ->second);
+	return groups.erase(it);
+}
+
+Layout::GroupMap::const_iterator Layout::BottomUp::removeNode(std::shared_ptr<const Node> n, bool * singleLeft)
+{
+		GroupMapIt pr{ groups.equal_range(n -> v -> uid) };
+		// keep track of the number of matching groups;
+		if ( pr.first == pr.second) {
+			throw std::runtime_error("No elements in Group map");
+		}
+	       	GroupMap::size_type t {0};
+	        GroupMap::const_iterator lastValid{ pr.second};
+		for (; pr.first != pr.second; ++pr.first)
+		{
+			if (pr.first ->second.first == n)
+			{
+				GroupMap::const_iterator next;
+				bool lastElement { false};
+				if (t == 0) {
+					next = pr.first;
+					lastElement = ( ++next == pr.second);
+				}
+				pr.first = removeGroupPair(pr.first, lastElement);
+				break;
+			}
+			else {
+				lastValid = pr.first++;
+				++t;
+			}
+		}// check for non match
+		for (; pr.first != pr.second; ++pr.first)
+		{
+			if (pr.first ->second.first == n)
+			{
+				throw std::runtime_error("Group matches two nodes");
+				break;
+			}
+			else {
+				lastValid = pr.first++;
+				++t;
+			}
+		}
+		*singleLeft = (t == 1);
+		return lastValid;
+}
+void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
+{
+	       NodeMapIt start {nMap.begin()};
+	       if (start == nMap.end())
+	       {
+		       return;
+	       }
+	       uIDType index { start -> second -> v -> uid};
+	       NodeMapItPr nMapPr { nMap.equal_range(index)};
+	       GroupMapIt    pr { groups.equal_range(index)};
+	       // t is the number of Group Pairs of this type that have not
+	       // matched.
+	       GroupMap::size_type t {0};
+	       GroupMap::const_iterator lastValid{ pr.second};
+	       for ( ; pr.first != pr.second; )
+	       {
+		       bool matchFound {false};
+		       for (NodeMapIt current {nMapPr.first}; current != nMapPr.second; )
+			{
+				// match found
+				if ( current -> second == pr.first -> second.first) 
+				{
+					GroupMap::const_iterator next;
+					bool lastElement { false};
+					if (t == 0) {
+						next = pr.first;
+						lastElement = ( ++next == pr.second);
+					}
+					pr.first = removeGroupPair(pr.first, lastElement);
+					break;
+					matchFound = true;
+					if (current == nMapPr.first) {
+						nMapPr.first = nMap.erase(current);
+					}
+					else {
+						nMap.erase(current);
+					}
+					break;
+				}
+				else {
+					++current; 
+				}
+			}
+		        if (!matchFound){
+				lastValid = pr.first++;
+				++t;
+				if (t > 1 && nMapPr.first == nMapPr.second){
+					break;
+				}
+			}
+	       }
+	       if (nMapPr.first != nMapPr.second) {
+		       throw std::runtime_error("Some Nodes not deleted");
+	       }
+	       if (t == 1) {
+		       removeGroupPair(lastValid, true);
+	       }
+}
+
+					
 
 // true if   ll <= d (desired) < ll + size, false otherwise
 bool withinBox (const EVector& ll, const EVector& size, const EVector& d)

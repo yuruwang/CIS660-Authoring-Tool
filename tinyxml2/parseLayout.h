@@ -120,6 +120,9 @@ namespace Layout {
 	// WeakMap holds a hashtable of uIDTypes and a Group Pairs
 	// Each groupPair has the same NodeValue but a different Node itself.
 	typedef std::pair<GroupMap::const_iterator, GroupMap::const_iterator> GroupMapIt; 
+	typedef std::unordered_multimap<uIDType, std::shared_ptr<const Node>> NodeMap;
+	typedef  NodeMap::const_iterator   NodeMapIt;
+	typedef  std::pair<NodeMapIt, NodeMapIt> NodeMapItPr;
 	typedef std::unordered_multimap<uIDType, std::weak_ptr<const Node>> WeakMap;
 	// stores Groups indexed by their YWidth.  The YWidth is already grouped
 	// by Xwidth. At one location there should only be one group that has
@@ -168,14 +171,49 @@ namespace Layout {
 
 	// Pair of Efloats making up a min max along a dimension X or Y
 	typedef   std::pair<Efloat, Efloat> minMaxPr;
-	// LineSegment encodes a line segment that would be part of a split line.
-	// An important observation is that the splitlines that divide groups are never
-	// on the bounding box, they are always 
+	// LineSegment encodes a line segment that would be part of a split line. It goes along either X, or Y given 
+	//                  by axis,  with a common transverse coordinate
+	//                  (transverseVal).
 	struct LineSegment {
+        /***********************************************************************************************
+	 * LineSegment initializes using the parameters from
+	 * @params[in]   ll   the lower left corner of the Node-- will be the
+	 * 			pr.first wil be ll.x ro ll.y
+	 * 		ax    the axis of the pair,  X means pr goes along X.
+	 * 		ntGroup the size is used to get the max of the pair. 
+	 * 		    if ax is X then pr.second = ll.x + ntGroup->size.x;
+	 * 		                    transverseVal = ll.y + ntGroup->size.y
+	 **********************************************************************************************/
+		LineSegment(const EVector& ll,  EVector::Axis ax, std::shared_ptr<const Node>  ntGroup);
+		EVector::Axis  ax;  // the direction of min, max, say Y
 		minMaxPr  pr; // min and max values of the line say ymin, ymax.
 		Efloat transverseVal; // the one transverse value say x.
-		EVector::Axis  ax;  // the direction of min, max, say Y
 	};
+
+/******************************************************************************************************************************
+ * @func        allSplitGroups will take lineSegment and return all the groups
+ * 			that are split by the line segment. The groups returned
+ * 			are unique but there may be more than one ntGroup with
+ * 			the same index. 
+ * @params[in]   GroupPair LL, the starting search location.  Will go up and
+ * 			down the tree to find all overlapping lineSegments.
+ *               lineSegment & line , the line segment that defines the line you
+ *               are looking for. 
+ *  @return      a map of const Nodes that are cut by the line
+ *  @brief       There may be a single line if the line happens to be exactly
+ *  		along the kd tree splitlines, or it could be along multiple kd
+ *  		tree splitlines.  This gathers the splits from all of them. It
+ *  		does not remove any groups from branch Nodes.
+ *  ******************************************************************************************************************/
+	NodeMap allsplitGroups(GroupPair ll, LineSegment& line);
+/******************************************************************************************************************
+ *    @func     addNodeMaps(NodeMap sum, NodeMap other) will add all the unique
+ *    		shared pointers from new into sum.
+ *    @params[in]      sum:  all the unique const Nodes sorted by uid
+ *                     other:  other Node map to insert. Does not modify
+ *                     NodeMap& b.
+ * *************************************************************************************************************/
+	void addToNodeMaps(NodeMap& sum, const NodeMap& b);
 	
 /********************************************************************************************************
  * LeafNode holds the leaf node nodes these store all the groups that have an
@@ -256,6 +294,11 @@ namespace Layout {
  * 		split lines in all branch nodes that split the group.
  * @params[in]   GroupPair LL, the starting search direction 
  *               GroupPair NT, the nonTerminal Group Node
+ *              An important observation is that the splitlines that divide groups are never
+*		 on the bounding box, they are always in the split segments within it.
+*		Furthermore for every line that splits groups, it overlaps with only one internal splitLine in the parent and 
+*		many as bounding box edges in the children.  The NT Groups are
+*		stored once in the internal segments and not on the edges.  
  *  ******************************************************************************************************************/
 	void addNTGroupToSplitLines(GroupPair ll, GroupPair ntGroup);
 /******************************************************************************************************************************
@@ -323,6 +366,42 @@ namespace Layout {
 		// this holds the locations of the root node together with its
 		// lower left location.
 		GroupPair location;
+/*************************************************************************************************************
+ *  @func	removeGroupPair will remove a GroupPair first from the
+ *  		BranchNodes, then the terminal Nodes, then the GroupMap.
+ *  @params[in]  it is the Group iterator.
+ *               last  true if this is the last iterator with this uid in the
+ *               map. Then we would also erase the group from the names map
+ *  @return     the iterator of the next element in the container.
+ *  @brief      This will remove one GroupPair from the LL corner map, from the
+ *  		split groups, from groups and from names.
+ *  *************************************************************************************************************/
+		GroupMap::const_iterator removeGroupPair(GroupMap::const_iterator it, bool last = false);
+/*************************************************************************************************************
+ *  @func	removeNode will remove a Node first from the
+ *  		BranchNodes, then the terminal Nodes, then the GroupMap.
+ *  @params[in]  shared_ptr<const Node>  n is the node to remove. It should be in the map. 
+ *               bool singleLeft            returns true if there is only one element left with
+ *               	    			the same index number.
+ *  @return     the iterator of the next element in the container.
+ *  @brief      This will remove one Node from the LL corner map, from the
+ *  		split groups, from groups and from names. If the group is not
+ *  		found it throws an exception.  Returns the iterator of the next
+ *  		element and a bool last, which is true if there is only one
+ *  		matching node left. This will always remove only one Node.
+ *  *************************************************************************************************************/
+		GroupMap::const_iterator removeNode(std::shared_ptr<const Node> n, bool * singleLeft);
+/*************************************************************************************************************
+ *  @func	removeNodes will remove a set of Nodes from a NodeMap first from the
+ *  		BranchNodes, then the terminal Nodes, then the GroupMap.
+ *  @params[in]  NodeMap nMap  a NodeMap.  This will remove all matching entries
+ *  					for the begin operator.
+ *  						They should be in the Groupmap. 
+ *  @brief       This will find the first element in NodeMap and remove all the
+ *  	         nodes with the same UID.  if there is only one element left in
+ *  	         groups. it will remove that one too.
+ *  *************************************************************************************************************/
+		void removeNodes(NodeMap& nMap);
 	private:
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
@@ -368,6 +447,15 @@ namespace Layout {
  * @params 	[start, last),   First(inclusive), Last[exclusive] ID to search from
  * ************************************************************************************************************/
 		void removeSingles(uIDType start, uIDType last);
+/****************************************************************************************************************
+ *  @func       findGroupPair  will find a GroupPair corresponding to a node
+ *  @params[in]  std::shared_ptr<const Node> n  the input node to search for.
+ *  @return      GroupMap::const_iterator it of the next element in the
+ *  		container.  
+ *  @brief      This will throw an exception if n is not found
+ *  *************************************************************************************************************/
+		GroupMap::const_iterator findGroupPair(std::shared_ptr<const Node> n);
+
 /*************************************************************************************************************
  * @func      addNTGroups adds Non-terminal Groups to the GroupMap.  It goes
  * 		through every group in the groupMap and builds nodes that have nTerm terminal regions.  Each pass adds
