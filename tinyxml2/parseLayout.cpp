@@ -18,10 +18,9 @@ namespace Layout {
 		// group lowerLeft;
 		// minMax pairs of the group Node
 		const minMaxPr xGroup, yGroup;
-		minMaxPr currentGroup;
 	public:
 		// initialize all variables
-		LineIntersects(Layout::GroupPair& StartLocation, Layout::GroupPair& NTgroup);
+		LineIntersects(GroupPair& StartLocation, GroupPair& NTgroup);
 		// updates the StartLocation Group
 		void updateSearchCorner(Layout::GroupPair& loc);
 		// anyOverlaps determins if any splitlines within startLocation
@@ -40,6 +39,45 @@ namespace Layout {
 		bool operator()(const Efloat& splitLine) const;
 		// returns current Axis
 		EVector::Axis axis() const;
+	};
+	// determine if a LineSegment overlaps with any splitline in the
+	// BranchNode
+	class LineOverlapsLine {
+		private:
+			// minMap x, y dimensions of spatial Node bounding box
+		        minMaxPr xLocPr;
+			minMaxPr yLocPr;
+			// axis of GroupNode
+			EVector::Axis splitDir;
+			// this is the x or y minMaxPr along the splitDirection;
+			minMaxPr currentPr;
+			// the size of the group  Node
+			// group lowerLeft;
+			// minMax pairs of the group Node
+			const Layout::LineSegment  line;  // the line that encodes
+			// true if the the splits in the branch Node are along
+			// the lineSegment
+			bool  aligned;
+
+		public:
+			// initialize all variables
+			LineOverlapsLine (GroupPair& loc,  LineSegment ls);
+			//  find 
+			void updateSearchCorner(Layout::GroupPair& loc);
+			// Given the size of the spatial Location  or Branche Node, will determine
+			// in any lines within this overlap
+			bool anyOverlaps() const;
+			// groupWithinLocation determines if the lineSegment is
+			// completely within the GroupPair XLocPr, yLocPr.
+			bool groupWithinLocation() const;
+			// provide the size of the location and this will return true
+			// if the group is contained within location.  If it not within
+			// the location then one needs to look to the parent
+			// supply a child min max range for the bounding box in the
+			// splitDir true means that should could contain an Overlap line
+			bool operator()(const Layout::minMaxPr pr) const; 
+			// true if the splitline overlaps the stored line
+			bool operator()(const Efloat& splitLine) const;
 	};
 	/*******************************************************************************************************************
 	 *      @func findContainingParent will find the branch Node that contains the
@@ -258,8 +296,7 @@ Layout::LineIntersects::LineIntersects(Layout::GroupPair& loc, Layout::GroupPair
 	splitDir { loc.first -> splitDir},
 	xGroup { Layout::minMaxPr(group.second.x, group.second.x + group.first -> size.x)},
 	yGroup { Layout::minMaxPr(group.second.y, 
-	       	 group.second.y + group.first -> size.y)},
-	currentGroup { (splitDir == EVector::Axis::X) ?  xGroup:yGroup}
+	       	 group.second.y + group.first -> size.y)}
 {}
 		// updates the corner to begin searching from;
 void Layout::LineIntersects::updateSearchCorner(Layout::GroupPair& loc)
@@ -267,7 +304,6 @@ void Layout::LineIntersects::updateSearchCorner(Layout::GroupPair& loc)
 			 xLocPr = Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x); 
 			 yLocPr = Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y);
 			 splitDir = loc.first -> splitDir;
-		         currentGroup = (splitDir == EVector::Axis::X) ?  xGroup:yGroup;
 		}
 
 		// Given the size of the spatial Location Node, will determine
@@ -290,11 +326,14 @@ bool Layout::LineIntersects::groupWithinLocation() const
 		// used to get whether a child node
 bool Layout::LineIntersects::operator()(const Layout::minMaxPr pr) const 
 		{
-			return strictlyOverlap(pr, currentGroup);
+			return  (splitDir == EVector::Axis::X) ? 
+				strictlyOverlap(pr, xGroup) : strictlyOverlap(pr, yGroup);
 		}
 bool Layout::LineIntersects::operator()(const Efloat& splitLine) const
 		{
-		      return strictlyOverlap(currentGroup, xLocPr.first + splitLine);
+		      return (splitDir == EVector::Axis::X)? 
+			      strictlyOverlap(xGroup, xLocPr.first + splitLine):
+			      strictlyOverlap(yGroup, yLocPr.first + splitLine);
 		}
 EVector::Axis  Layout::LineIntersects::axis() const
 {
@@ -304,77 +343,70 @@ EVector::Axis  Layout::LineIntersects::axis() const
    group. The group has a non zero width and a height. It also tests whether a childNode is overlapping with the group,
    where the group is within the location  and wether there are any overlaps at all*/
  
-class LineOverlapsLine {
-	private:
-		// minMap x, y dimensions of spatial Node bounding box
-		const Layout::minMaxPr xLocPr;
-		const Layout::minMaxPr yLocPr;
-		// axis of GroupNode
-		const EVector::Axis splitDir;
-		// the size of the group  Node
-		// group lowerLeft;
-		// minMax pairs of the group Node
-		const Layout::LineSegment  line;  // the line that encodes
-	public:
-		// initialize all variables
-		LineOverlapsLine (Layout::GroupPair loc,  const Layout::LineSegment ls):
+Layout::LineOverlapsLine::LineOverlapsLine (Layout::GroupPair& loc,  Layout::LineSegment ls):
 			 xLocPr { Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x)}, 
 			 yLocPr { Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y)},
 			 splitDir { loc.first -> splitDir},
-			 line  { ls}{}
-		// Given the size of the spatial Location Node, will determine
-		// in any lines within this node could possible be splitlines
-		bool anyOverlaps() const
+			 currentPr {(splitDir ==EVector::Axis::X)? xLocPr:yLocPr},
+			 // splitDir == Y means the split lines go along X and
+			 // have one value at Y; for LineSegment this means
+			 // line.ax == X ( because line segment is along X)
+			 line  { ls}, aligned{ line.ax != splitDir}{}
+void Layout::LineOverlapsLine::updateSearchCorner(Layout::GroupPair& loc)
 		{
-		    bool Overlaps;
-		    if (line.ax == EVector::Axis::X)
-		    { 
-			    Overlaps = strictlyOverlap( yLocPr, line.transverseVal);
-			    Overlaps = Overlaps && strictlyOverlap(xLocPr, xLocPr);
-		    }
-		    else
-		    { 
-			    Overlaps = strictlyOverlap( xLocPr, line.pr);
-			    Overlaps = Overlaps && strictlyOverlap(yLocPr, line.pr);
-		    }
-		    return Overlaps;
+			 xLocPr = Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x); 
+			 yLocPr = Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y);
+			 splitDir = loc.first -> splitDir;
+			 aligned = splitDir != line.ax;
 		}
-		// provide the size of the location and this will return true
-		// if the group is contained within location.  If it not within
-		// the location then one needs to look to the parent
-		bool groupWithinLocation() const 
-		{
-		    bool Overlaps;
-		    if (line.ax == EVector::Axis::X)
-		    { 
-			    Overlaps = strictlyOverlap( yLocPr, line.transverseVal);
-			    Overlaps = Overlaps && containedWithin(xLocPr, line.pr);
-		    }
-		    else
-		    { 
-			    Overlaps = strictlyOverlap( xLocPr, line.transverseVal);
-			    Overlaps = Overlaps && containedWithin(yLocPr, line.pr);
-		    }
-		    return Overlaps;
-		}
-		// supply a child min max range for the bounding box in the
-		// splitDir true means that should could contain an Overlap line
-		bool operator()(const Layout::minMaxPr pr) const 
-		{
-			return strictlyOverlap(pr, line.transverseVal);
-		}
-		// true if the splitline overlaps the stored line
-		bool operator()(const Efloat& splitLine) const
-		{
-			if (splitDir == EVector::Axis::X)
-			{
-				return  xLocPr.first + splitLine == line.transverseVal;
-			}
-			else{
-				return yLocPr.first + splitLine ==  line.transverseVal;
-			}
-		}
-};
+bool Layout::LineOverlapsLine::anyOverlaps() const
+{
+	bool Overlaps;
+	if (line.ax == EVector::Axis::X)
+	{ 
+		Overlaps = strictlyOverlap( yLocPr, line.transverseVal);
+		Overlaps = Overlaps && strictlyOverlap(xLocPr, line.pr);
+	}
+	else
+	{ 
+		Overlaps = strictlyOverlap( xLocPr, line.transverseVal);
+		Overlaps = Overlaps && strictlyOverlap(yLocPr, line.pr);
+	}
+	return Overlaps;
+}
+bool Layout::LineOverlapsLine::groupWithinLocation() const 
+{
+	bool Overlaps;
+	if (line.ax == EVector::Axis::X)
+	{ 
+		Overlaps = strictlyOverlap( yLocPr, line.transverseVal);
+		Overlaps = Overlaps && containedWithin(xLocPr, line.pr);
+	}
+	else
+	{ 
+		Overlaps = strictlyOverlap( xLocPr, line.transverseVal);
+		Overlaps = Overlaps && containedWithin(yLocPr, line.pr);
+	}
+	return Overlaps;
+}
+bool Layout::LineOverlapsLine::operator()(const Layout::minMaxPr pr) const 
+{
+	return (aligned) ? strictlyOverlap(pr, line.transverseVal):
+			strictlyOverlap(pr, line.pr);
+}
+// true if the splitline overlaps the stored line
+bool Layout::LineOverlapsLine::operator()(const Efloat& splitLine) const
+{
+	// if not aligned, the stored line and the splits are perpendicular.
+	// No split lines can equal.
+	bool overlap {false};
+	if (aligned) {
+		Efloat val {(splitDir == EVector::Axis::X)? xLocPr.first : yLocPr.first};
+		val +=splitLine;
+		overlap = (val == line.transverseVal);
+	}
+	return overlap;
+}
 /******************************************************************************************************
  *  @func    findOverlappingSplits will find within a Node of the spatial structure
  *  			tree, which Splits may overlap with a new Group;
@@ -1319,7 +1351,6 @@ void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
 						lastElement = ( ++next == pr.second);
 					}
 					pr.first = removeGroupPair(pr.first, lastElement);
-					break;
 					matchFound = true;
 					if (current == nMapPr.first) {
 						nMapPr.first = nMap.erase(current);
