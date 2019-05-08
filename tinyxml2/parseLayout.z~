@@ -103,6 +103,7 @@ namespace Layout {
 	// non const Node to pass partially formed nodes
 	typedef std::pair<std::shared_ptr<Node>, const EVector>  nGroupPair;
 	// List is list of Group Pairs;
+	//typedef std::pair<std::weak_ptr<const Node>, EVector>  WeakPair;
 	//childIT  is an iterator over the children of a Node
 	typedef std::vector<std::shared_ptr<const Node>>::const_iterator ChildIt;
 	typedef  std::pair<ChildIt, ChildIt>  ChildItPair; 
@@ -122,10 +123,7 @@ namespace Layout {
 	typedef std::unordered_multimap<uIDType, std::shared_ptr<const Node>> NodeMap;
 	typedef  NodeMap::const_iterator   NodeMapIt;
 	typedef  std::pair<NodeMapIt, NodeMapIt> NodeMapItPr;
-	typedef  std::pair<uIDType, std::weak_ptr<const Node>> WeakPair;
 	typedef std::unordered_multimap<uIDType, std::weak_ptr<const Node>> WeakMap;
-	typedef WeakMap::const_iterator WeakMapIt;
-	typedef std::pair<WeakMapIt, WeakMapIt> WeakMapItPr;
 	// stores Groups indexed by their YWidth.  The YWidth is already grouped
 	// by Xwidth. At one location there should only be one group that has
 	// the same X and Y width.  Hence this is a map, not a multimap
@@ -144,8 +142,6 @@ namespace Layout {
 	// NewExpired: Old group was expired new added over it.
 	// Fail: Failed to insert Group
 	enum InsertType {OldNode, NewNode, NewExpired, Fail};
-	// check if a key is found or notFound
-	enum NodeFound { Found, NotFound, Repeat, Error};
 	// BranchSplitPair is the branchNode and the index of the split line
 	// that a nonTerminal group is split by
 	typedef  std::pair<std::shared_ptr<const Node>, SplitItPair> BranchSplitPair;
@@ -180,30 +176,18 @@ namespace Layout {
 	//                  (transverseVal).
 	struct LineSegment {
         /***********************************************************************************************
-	 * LineSegment initializes using an nTGroup with ll, lower left corner.
-	 * 		       The line is the top Y or X border of the ntGroup.
+	 * LineSegment initializes using the parameters from
 	 * @params[in]   ll   the lower left corner of the Node-- will be the
-	 * 			pr.first wil be ll.x or ll.y
+	 * 			pr.first wil be ll.x ro ll.y
 	 * 		ax    the axis of the pair,  X means pr goes along X.
 	 * 		ntGroup the size is used to get the max of the pair. 
 	 * 		    if ax is X then pr.second = ll.x + ntGroup->size.x;
 	 * 		                    transverseVal = ll.y + ntGroup->size.y
 	 **********************************************************************************************/
 		LineSegment(const EVector& ll,  EVector::Axis ax, std::shared_ptr<const Node>  ntGroup);
-        /***********************************************************************************************
-	 * LineSegment initializes a GroupPair storing the BranchNode and the LL
-	 * 		       corner.  The line Segment is one of the
-	 * 		       splitLines.
-	 * @params[in]   gpr   The groupPair of the BranchNode
-	 * 	         split The iterator of the line you want to create
-	 * @brief              This will create a line segment from one of the
-	 * 			split lines within a group.
-	 *
-	 **********************************************************************************************/
-		LineSegment(GroupPair gpr,  SplitIt  split);
-		const EVector::Axis  ax;  // the direction of min, max, say Y
-		const minMaxPr  pr; // min and max values of the line say ymin, ymax.
-		const Efloat transverseVal; // the one transverse value say x.
+		EVector::Axis  ax;  // the direction of min, max, say Y
+		minMaxPr  pr; // min and max values of the line say ymin, ymax.
+		Efloat transverseVal; // the one transverse value say x.
 	};
 
 /******************************************************************************************************************************
@@ -424,26 +408,7 @@ namespace Layout {
  * @params[in]  node
  * @return      groupMap iterator
  * ************************************************************************************************************/
-		GroupMap::const_iterator findNode(std::shared_ptr<const Node> node) const;
-/*************************************************************************************************************
- * @func        NodeSplit will check if the nt group really is split by the
- * 			non terminal node (ntNode). If the group is found in the
- * 			hashTable it
- * 			should be split and if it is not found  it should not be
- * 			split.
- * @params[in]  split   This is the  SplitItPair of iterators
- * 			to the Splits Vector within it. 
- * 		gpr     This is the groupPair of the BranchNode; its Node and
- * 			Node and Location.
- * 		ntGroup Here is the nonTerminal Group Node that should be found.
- * @return      bool    true means that the splits are valid.  Valid means that
- * 			if the node was found, it is in the splits and if the
- * 			node was not found it is not in the splits.
- * @brief               This will insure that the splitGroups are found where
- * 			they should be and not found where they should not be
- * 			found.
- * ************************************************************************************************************/
-		bool NodeSplit(SplitItPair split, const GroupPair& gpr, const GroupPair& ntPr) const;
+		GroupMap::const_iterator findNode(std::shared_ptr<const Node> node);
 	private:
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
@@ -460,15 +425,6 @@ namespace Layout {
 		// parent
 		std::shared_ptr<const Node> copyTree( std::shared_ptr<const Node>   otherNode, const EVector& minVal, 
 				std::weak_ptr< const Node> p); 
-/*******************************************************************************************************************
- *  bool checkGroupPairStorage will check if a GroupPair is stored correctly
- *  @params[in]   thisNode  current Node, 
- *  	           minVal ll corner,
- *  	           ntGroup   GroupPair of tested Group
- *  	           termFound  true if the term was found
- *  	           *************************************************************************************************/
-		bool checkGroupPairStorage( std::shared_ptr<const Node>   otherNode, const EVector& minVal, 
-				const GroupPair& ntGroup, bool& termFound); 
 ///****************************************************************************************************
 // *          addNodeValue will just add the NodeValue to the nameMap; if
 //	    there is one there already, this returns the current one and
@@ -536,18 +492,6 @@ namespace Layout {
 		void addNTGroups(unsigned nTerms);
 		void addNTGroups(GroupMapIt pr, EVector::Axis ax, unsigned nTerms);  
 	};
-
-/*****************************************************************************************************************
- *  @func    testAddingNodes will check if a given GroupPair that was inserted
- *  	     is present correctly in all its locations.  For the corners.  It
- *  	     will start in the location, ll corner and search for it using its X
- *  	     and Y widths.  It checks whether the findXYLocation is working. For
- *  	     the splits and branches it finds a list of branches where it should
- *  	     be then checks each one whether it is there and wether it actually
- *  	     overlaps the split line.  This exercises LineIntersects and
- *  	     LineOverlapsLine.  
- * ***************************************************************************************************************/
-	bool testAddingNodes(const BottomUp&  bu, GroupPair pr);
 	tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);
 	
 	tinyxml2::XMLNode* getMainShape(tinyxml2::XMLDocument* doc);
