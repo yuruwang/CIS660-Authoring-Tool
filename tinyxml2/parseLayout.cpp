@@ -1,6 +1,8 @@
 #include "parseLayout.h"
 #include <sstream>
 #include <algorithm>
+//#define NDEBUG
+#include <assert.h>
 
 namespace Layout {
 	/* ******************************************************************************************************************
@@ -46,15 +48,12 @@ namespace Layout {
 	class LineOverlapsLine {
 		private:
 			// minMap x, y dimensions of spatial Node bounding box
+			// minMax pairs of the group Node
 		        minMaxPr xLocPr;
 			minMaxPr yLocPr;
 			// axis of GroupNode
 			EVector::Axis splitDir;
 			// this is the x or y minMaxPr along the splitDirection;
-			minMaxPr currentPr;
-			// the size of the group  Node
-			// group lowerLeft;
-			// minMax pairs of the group Node
 			const Layout::LineSegment  line;  // the line that encodes
 			// true if the the splits in the branch Node are along
 			// the lineSegment
@@ -377,7 +376,6 @@ Layout::LineOverlapsLine::LineOverlapsLine (const Layout::GroupPair& loc,  Layou
 			 xLocPr { Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x)}, 
 			 yLocPr { Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y)},
 			 splitDir { loc.first -> splitDir},
-			 currentPr {(splitDir ==EVector::Axis::X)? xLocPr:yLocPr},
 			 // splitDir == Y means the split lines go along X and
 			 // have one value at Y; for LineSegment this means
 			 // line.ax == X ( because line segment is along X)
@@ -558,8 +556,20 @@ void Layout::branchesWithOverlappingSplit(Layout::GroupPair currentLoc, Layout::
 		splits.push_back(Layout::BranchSplitPair(currentLoc.first, splitIndices));
 	}
 	Layout::ChildItPair childrenPairs { findOverlappingChildren( currentLoc, line)};
+	std::ptrdiff_t  diff { childrenPairs.first - currentLoc.first ->children.begin()};
+	// first child of currentLoc.first is an overlapping child
 	std::vector<Efloat>::size_type indx {0};
 	EVector childMin {currentLoc.second};
+	if (diff > 0 && diff < currentLoc.first ->children.size()) {
+		indx = diff - 1;
+		if (line.axis() == EVector::Axis::X)
+		{
+			childMin.x = currentLoc.second.x + currentLoc.first ->splits[indx++];
+		}
+		else{
+			childMin.y = currentLoc.second.y + currentLoc.first ->splits[indx++];
+		}
+	}
 	if ( line.axis() == EVector::Axis::X)
 	{
 		for (; childrenPairs.first < childrenPairs.second; ++childrenPairs.first )
@@ -567,7 +577,7 @@ void Layout::branchesWithOverlappingSplit(Layout::GroupPair currentLoc, Layout::
 			GroupPair childPair ( *childrenPairs.first, childMin);
 			line.updateSearchCorner(childPair);
 			branchesWithOverlappingSplit(childPair, line, splits); 
-			if ( indx < splits.size()) {
+			if ( indx < currentLoc.first->splits.size()) {
 				childMin.x = currentLoc.second.x + 
 					currentLoc.first -> splits[indx++];
 			}
@@ -581,7 +591,7 @@ void Layout::branchesWithOverlappingSplit(Layout::GroupPair currentLoc, Layout::
 			GroupPair childPair ( *childrenPairs.first, childMin);
 			line.updateSearchCorner(childPair);
 			branchesWithOverlappingSplit(childPair, line, splits); 
-			if ( indx < splits.size()) {
+			if ( indx < currentLoc.first ->splits.size()) {
 				childMin.y = currentLoc.second.y + 
 					currentLoc.first -> splits[indx++];
 			}
@@ -824,11 +834,13 @@ std::list<std::shared_ptr<const Layout::Node>>  Layout::LeafNode::findXYLocMap(E
 		{
 			YWidth::iterator  Yit { curr -> second.find(width)};
 			if (Yit != curr -> second.end())
-			if (Yit ->second.expired()){
-				throw std::runtime_error("Expired Group in Location Map");
+			{ 
+				if (Yit->second.expired()) {
+					throw std::runtime_error("Expired Group in Location Map");
+				}
+				std::shared_ptr<const Node> cptr {Yit ->second.lock()};
+				list.push_back(cptr);
 			}
-			std::shared_ptr<const Node> cptr {Yit ->second};
-			list.push_back(cptr);
 		}
 	}
 	return list;
@@ -1154,6 +1166,7 @@ bool Layout::BottomUp::checkGroupPairStorage( std::shared_ptr<const Layout::Node
 			if (!valid) {
 				return valid;
 			}
+			termFound = true;
 		}
 		else {
 			valid = matchFoundx == nodesFoundx.end() && matchFoundy == nodesFoundy.end();
@@ -1493,11 +1506,22 @@ Layout::GroupMap::const_iterator Layout::BottomUp::removeGroupPair( Layout::Grou
 		}
 		names.erase(nameit);
 	}
+	bool termsFound {false};
+	bool success {checkGroupPairStorage(location.first, 
+			location.second, it -> second, termsFound)}; 
+	if (!(termsFound && success)) {
+			throw std::runtime_error("group not inserted correctly");
+	}
+	success = testAddingNodes(*this, it->second); 
+	if (!success) {
+			throw std::runtime_error("group not inserted correctly");
+	}
+	
 	EVector StartSearch = it -> second.second;
 	std::shared_ptr<const LeafNode>  llcorner { findLLNode(it -> second.first , 
 			                                    StartSearch,
 		                            it -> second.second)};
-	bool success {llcorner ->removeFromXYLocMap(it ->second.first)};
+	success = llcorner ->removeFromXYLocMap(it ->second.first);
 	if (!success)
 	{
 	    throw std::runtime_error("failed to remove node in XY Location map");
@@ -1851,16 +1875,23 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 				case OldNode: // don't add and don't increment
 					break;
 				case NewNode:
+				{
 					// increment and update the names
 					if (curr == next) {
-						grouptype = addNodeValue(NewGroupPr.first -> v, names);
+						grouptype = addNodeValue(NewGroupPr.first->v, names);
 					}
-					addToGroupMap( NewGroupPr.first, 
-							NewGroupPr.second, grouptype);
+					addToGroupMap(NewGroupPr.first,
+						NewGroupPr.second, grouptype);
 					// add group to all split lines
-					addNTGroupToSplitLines( GroupPair( thisCorner, it -> second.second), 
-							NewGroupPr); 
+					addNTGroupToSplitLines(GroupPair(thisCorner, it->second.second),
+						NewGroupPr);
+					bool termsFound{ false };
+					assert( checkGroupPairStorage(location.first,
+							location.second, NewGroupPr, termsFound) );
+					assert(termsFound);
+					assert(testAddingNodes(*this, NewGroupPr));
 					break;
+				}
 				case NewExpired:
 					if (curr == next) {
 						grouptype = addNodeValue(NewGroupPr.first -> v, names);
@@ -1878,6 +1909,18 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 	}
 }
 
+
+/*******************************************************************************************************
+ * findLLTermInBranch will find the lowerLeft terminal group in a branch;
+ *
+ *************************************************************************************************************/
+ std::shared_ptr<const Layout::Node> findLLCornerBranch(std::shared_ptr<const Layout::Node> branch) 
+{
+		 if (branch ->terminal()) {
+			 return branch;
+		 }
+		 return findLLCornerBranch( branch -> children[0]);
+}
 
 /*****************************************************************************************************************
  *  @func    testAddingNodes will check if a given GroupPair that was inserted
@@ -1933,14 +1976,18 @@ bool Layout::testAddingNodes(const BottomUp&  bu, GroupPair pr)
 	Layout::branchesWithOverlappingSplit(parent, line, splits);
 	for (BranchSplitPair oneSplit:splits)
 	{
-	     GroupMap::const_iterator it { bu.findNode(oneSplit.first)};
-	     bool found = bu.NodeSplit(oneSplit.second, it -> second, pr);
+	        std::shared_ptr<const Node> llcorner {findLLCornerBranch(oneSplit.first)};
+		GroupMap::const_iterator it { bu.findNode(llcorner)};
+		 if (it == bu.groups.end()) {
+			 return false;
+		 }
+		 // second argument is the branch in the location tree and its ll corner
+	     bool found = bu.NodeSplit(oneSplit.second, 
+			      Layout::GroupPair(oneSplit.first, it -> second.second), pr);
 	     if (!found){
 		     return false;
 	     }
 	}
 	return true;
 }
-
-
 
