@@ -1,8 +1,8 @@
+//define NDEBUG
+#include <assert.h>
 #include "parseLayout.h"
 #include <sstream>
 #include <algorithm>
-//#define NDEBUG
-#include <assert.h>
 
 namespace Layout {
 	/* ******************************************************************************************************************
@@ -78,6 +78,7 @@ namespace Layout {
 			bool operator()(const Layout::minMaxPr pr) const; 
 			// true if the splitline overlaps the stored line
 			bool operator()(const Efloat& splitLine) const;
+			EVector::Axis axis() const;
 	};
 	/*******************************************************************************************************************
 	 *      @func findContainingParent will find the branch Node that contains the
@@ -89,9 +90,26 @@ namespace Layout {
 	 *      		  line is made with LineIntersects( currentLoc, NTgroup)
 	 *       @return          The groupPair of the node containing the NTgroup
 	 * *****************************************************************************************************************/
-
-	GroupPair    findContainingParent(GroupPair currentLoc,
-		LineIntersects& line);
+	template<typename T> GroupPair    findContainingParent(Layout::GroupPair currentLoc, 
+				 T& line)
+	{
+		// true when the new group within line is within this currentLoc.  
+      		if (line.groupWithinLocation()) {
+			return currentLoc;
+		}
+		// no so check parent. initialize with child location.
+		EVector parentLoc { currentLoc.second};
+		// parent is null
+		if ( currentLoc.first->parent.expired() ||  currentLoc.first->parent.lock() == nullptr)
+		{
+			throw std::runtime_error("Parent expired or not large enough for this group");
+		}
+		// this will update the parent location
+		parentLLCorner( currentLoc.first -> parent.lock(), currentLoc.first, parentLoc);
+		GroupPair parentPair( currentLoc.first -> parent.lock(), parentLoc);
+		line.updateSearchCorner(parentPair);
+		return Layout::findContainingParent(parentPair, line);
+	}
 	/******************************************************************************************************************
 	 *      @func branchesWithOverlappingSplits finds all branches and the splitlines
 	 *         	within the branch that has overlapping splits with a given
@@ -104,8 +122,60 @@ namespace Layout {
 	 *	           vector<BranchSplitPairs> all the splitlines that overlap with
 	 *	this group
 	 *	*********************************************************************************************************/
-
-	void branchesWithOverlappingSplit(GroupPair currentLoc, LineIntersects& line, std::vector<BranchSplitPair>& splits);
+	template<typename T> void branchesWithOverlappingSplit(GroupPair currentLoc, T& line,  
+			             std::vector<BranchSplitPair>& splits )
+	{
+		if (!line.anyOverlaps()){
+			return;
+		}
+		//do the splits in current Node
+		SplitItPair splitIndices { findOverlappingSplits(currentLoc, line)};
+		if (splitIndices.first != splitIndices.second) {
+			splits.push_back(BranchSplitPair(currentLoc.first, splitIndices));
+		}
+		ChildItPair childrenPairs { findOverlappingChildren( currentLoc, line)};
+		std::ptrdiff_t  diff { childrenPairs.first - currentLoc.first ->children.begin()};
+		// first child of currentLoc.first is an overlapping child
+		std::vector<Efloat>::size_type indx {0};
+		EVector childMin {currentLoc.second};
+		if (diff > 0 && diff < static_cast<std::ptrdiff_t>(currentLoc.first ->children.size())) {
+			indx = diff - 1;
+			if (line.axis() == EVector::Axis::X)
+			{
+				childMin.x = currentLoc.second.x + currentLoc.first ->splits[indx++];
+			}
+			else{
+				childMin.y = currentLoc.second.y + currentLoc.first ->splits[indx++];
+			}
+		}
+		if ( line.axis() == EVector::Axis::X)
+		{
+			for (; childrenPairs.first < childrenPairs.second; ++childrenPairs.first )
+			{ 
+				GroupPair childPair ( *childrenPairs.first, childMin);
+				line.updateSearchCorner(childPair);
+				branchesWithOverlappingSplit(childPair, line, splits); 
+				if ( indx < currentLoc.first->splits.size()) {
+					childMin.x = currentLoc.second.x + 
+						currentLoc.first -> splits[indx++];
+				}
+			}
+	
+		}
+		else 
+		{ 
+			for (; childrenPairs.first < childrenPairs.second; ++childrenPairs.first )
+			{ 
+				GroupPair childPair ( *childrenPairs.first, childMin);
+				line.updateSearchCorner(childPair);
+				branchesWithOverlappingSplit(childPair, line, splits); 
+				if ( indx < currentLoc.first ->splits.size()) {
+					childMin.y = currentLoc.second.y + 
+						currentLoc.first -> splits[indx++];
+				}
+			}
+		}
+	}
 }
 /**************************************************************************************************************************
  * WeakCompare will compare weak_ptr<const Node>
@@ -368,6 +438,10 @@ EVector::Axis  Layout::LineIntersects::axis() const
 {
 	return splitDir;
 }
+EVector::Axis  Layout::LineOverlapsLine::axis() const
+{
+	return splitDir;
+}
 /* LineOverlapsLine tests if a splitLVine is within a spatialLocation 
    group. The group has a non zero width and a height. It also tests whether a childNode is overlapping with the group,
    where the group is within the location  and wether there are any overlaps at all*/
@@ -440,7 +514,7 @@ bool Layout::LineOverlapsLine::operator()(const Efloat& splitLine) const
  *  			tree, which Splits may overlap with a new Group;
  *  @params[in]     GroupPair locGroup -Node and location in the spatial
  *  			 in the spatial structure of where to look.
- *  		    LineIntersects.  All params of the childGroup related to
+ *  		    LineIntersects/LineOverlapsLine.  All params of the childGroup related to
  *  		    	line intersection
  *  @params[out]    SplitItPair  a pair of iterators of the splitLines that
  *  		    cut the group.
@@ -451,7 +525,7 @@ bool Layout::LineOverlapsLine::operator()(const Efloat& splitLine) const
  *  		    false.  This is not a recursive function,
  *  		    but just covers the children in the locGroup.
  ******************************************************************************************************/
-Layout::SplitItPair  findOverlappingSplits(Layout::GroupPair loc, const Layout::LineIntersects& 
+template<typename T> Layout::SplitItPair  findOverlappingSplits(Layout::GroupPair loc, const T& 
 		           lineFunction)
 {
 	Layout::SplitItPair  pr { loc.first -> splits.begin(), loc.first ->splits.end()};
@@ -477,7 +551,7 @@ Layout::SplitItPair  findOverlappingSplits(Layout::GroupPair loc, const Layout::
  *  		    but just covers the children in the locGroup.
  ******************************************************************************************************/
 // finds overlapping children 
-Layout::ChildItPair  findOverlappingChildren(Layout::GroupPair loc, Layout::LineIntersects& child)
+template<typename T> Layout::ChildItPair  findOverlappingChildren(Layout::GroupPair loc, T& child)
 {
 	Layout::ChildIt last { loc.first -> children.end()};
 	Layout::ChildItPair  pr { last, last};
@@ -522,82 +596,6 @@ Layout::ChildItPair  findOverlappingChildren(Layout::GroupPair loc, Layout::Line
 	}
 	return pr;
 }
-// the line has
-Layout::GroupPair    Layout::findContainingParent(Layout::GroupPair currentLoc, 
-				 Layout::LineIntersects& line)
-{
-	// true when the new group within line is within this currentLoc.  
-	if (line.groupWithinLocation()) {
-		return currentLoc;
-	}
-	// no so check parent. initialize with child location.
-	EVector parentLoc { currentLoc.second};
-	// parent is null
-	if ( currentLoc.first->parent.expired() ||  currentLoc.first->parent.lock() == nullptr)
-	{
-		throw std::runtime_error("Parent expired or not large enough for this group");
-	}
-	// this will update the parent location
-	parentLLCorner( currentLoc.first -> parent.lock(), currentLoc.first, parentLoc);
-	GroupPair parentPair( currentLoc.first -> parent.lock(), parentLoc);
-	line.updateSearchCorner(parentPair);
-	return Layout::findContainingParent(parentPair, line);
-}
-
-void Layout::branchesWithOverlappingSplit(Layout::GroupPair currentLoc, Layout::LineIntersects& line,  
-		             std::vector<Layout::BranchSplitPair>& splits )
-{
-	if (!line.anyOverlaps()){
-		return;
-	}
-	//do the splits in current Node
-	Layout::SplitItPair splitIndices { findOverlappingSplits(currentLoc, line)};
-	if (splitIndices.first != splitIndices.second) {
-		splits.push_back(Layout::BranchSplitPair(currentLoc.first, splitIndices));
-	}
-	Layout::ChildItPair childrenPairs { findOverlappingChildren( currentLoc, line)};
-	std::ptrdiff_t  diff { childrenPairs.first - currentLoc.first ->children.begin()};
-	// first child of currentLoc.first is an overlapping child
-	std::vector<Efloat>::size_type indx {0};
-	EVector childMin {currentLoc.second};
-	if (diff > 0 && diff < currentLoc.first ->children.size()) {
-		indx = diff - 1;
-		if (line.axis() == EVector::Axis::X)
-		{
-			childMin.x = currentLoc.second.x + currentLoc.first ->splits[indx++];
-		}
-		else{
-			childMin.y = currentLoc.second.y + currentLoc.first ->splits[indx++];
-		}
-	}
-	if ( line.axis() == EVector::Axis::X)
-	{
-		for (; childrenPairs.first < childrenPairs.second; ++childrenPairs.first )
-		{ 
-			GroupPair childPair ( *childrenPairs.first, childMin);
-			line.updateSearchCorner(childPair);
-			branchesWithOverlappingSplit(childPair, line, splits); 
-			if ( indx < currentLoc.first->splits.size()) {
-				childMin.x = currentLoc.second.x + 
-					currentLoc.first -> splits[indx++];
-			}
-		}
-
-	}
-	else 
-	{ 
-		for (; childrenPairs.first < childrenPairs.second; ++childrenPairs.first )
-		{ 
-			GroupPair childPair ( *childrenPairs.first, childMin);
-			line.updateSearchCorner(childPair);
-			branchesWithOverlappingSplit(childPair, line, splits); 
-			if ( indx < currentLoc.first ->splits.size()) {
-				childMin.y = currentLoc.second.y + 
-					currentLoc.first -> splits[indx++];
-			}
-		}
-	}
-}
 
 
 // ll is the lower left of the terminal node starting location, ntGroup is the
@@ -621,6 +619,51 @@ void Layout::addNTGroupToSplitLines(Layout::GroupPair ll, Layout::GroupPair ntGr
 		br ->addGroup( ntGroup.first, pr.second);
 	}
 }
+/******************************************************************************************************************************
+ * @func        allSplitGroups will take lineSegment and return all the groups
+ * 			that are split by the line segment. The groups returned
+ * 			are unique but there may be more than one ntGroup with
+ * 			the same index. 
+ * @params[in]   GroupPair LL, the starting search location.  Will go up and
+ * 			down the tree to find all overlapping lineSegments.
+ *               lineSegment & line , the line segment that defines the line you
+ *               are looking for. 
+ *  @return      a map of const Nodes that are cut by the line
+ *  @brief       There may be a single line if the line happens to be exactly
+ *  		along the kd tree splitlines, or it could be along multiple kd
+ *  		tree splitlines.  This gathers the splits from all of them. It
+ *  		does not remove any groups from branch Nodes.
+ *  ******************************************************************************************************************/
+Layout::NodeMap Layout::allsplitGroups(Layout::GroupPair ll, Layout::LineSegment& line)
+{
+	Layout::LineOverlapsLine lol{ ll, line};
+	// get the line intersects class to determine overlaps and split lines 
+	Layout::GroupPair  parent {Layout::findContainingParent(ll, lol)};
+	std::vector<Layout::BranchSplitPair> splits;
+	// find all the split lines
+	Layout::branchesWithOverlappingSplit(parent, lol, splits);
+	for ( Layout::BranchSplitPair pr : splits)
+	{
+		std::shared_ptr<const Layout::BranchNode> br { 
+			std::dynamic_pointer_cast<const Layout::BranchNode>(pr.first)};
+		if (br == nullptr) 
+		{ 
+			throw std::runtime_error("dynamic cast failed to get branch Node");
+		}
+	}
+	return  Layout::NodeMap();
+}
+
+
+
+/******************************************************************************************************************
+ *    @func     addNodeMaps(NodeMap sum, NodeMap other) will add all the unique
+ *    		shared pointers from new into sum.
+ *    @params[in]      sum:  all the unique const Nodes sorted by uid
+ *                     other:  other Node map to insert. Does not modify
+ *                     NodeMap& b.
+ * *************************************************************************************************************/
+//	void addToNodeMaps(NodeMap& sum, const NodeMap& b);
 void Layout::removeNTGroupFromSplitLines( Layout::GroupPair ll, Layout::GroupPair ntGroup)
 {
 	// get the line intersects class to determine overlaps and split lines 
@@ -1506,22 +1549,27 @@ Layout::GroupMap::const_iterator Layout::BottomUp::removeGroupPair( Layout::Grou
 		}
 		names.erase(nameit);
 	}
-	bool termsFound {false};
-	bool success {checkGroupPairStorage(location.first, 
-			location.second, it -> second, termsFound)}; 
-	if (!(termsFound && success)) {
-			throw std::runtime_error("group not inserted correctly");
-	}
-	success = testAddingNodes(*this, it->second); 
-	if (!success) {
-			throw std::runtime_error("group not inserted correctly");
-	}
+	bool termsFound{ false };
+	assert( checkGroupPairStorage(location.first,
+			location.second, it ->second, termsFound) );
+	assert(termsFound);
+	assert(testAddingNodes(*this, it ->second));
+//	bool termsFound {false};
+//	bool success {checkGroupPairStorage(location.first, 
+//			location.second, it -> second, termsFound)}; 
+//	if (!(termsFound && success)) {
+//			throw std::runtime_error("group not inserted correctly");
+//	}
+//	success = testAddingNodes(*this, it->second); 
+//	if (!success) {
+//			throw std::runtime_error("group not inserted correctly");
+//	}
 	
 	EVector StartSearch = it -> second.second;
 	std::shared_ptr<const LeafNode>  llcorner { findLLNode(it -> second.first , 
 			                                    StartSearch,
 		                            it -> second.second)};
-	success = llcorner ->removeFromXYLocMap(it ->second.first);
+	bool success = llcorner ->removeFromXYLocMap(it ->second.first);
 	if (!success)
 	{
 	    throw std::runtime_error("failed to remove node in XY Location map");
