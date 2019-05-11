@@ -6,23 +6,18 @@
 
 namespace Layout {
 	/* ******************************************************************************************************************
-	 * LineIntersects tests if a splitLine within a spatialLocation GroupPair splits a
-	 * combined group. The group has a non zero width and a height. It also tests whether a childNode is
-	 * overlapping with the group, where the group is within the location
+	 * LineBasics is a base class that holds common functions and common 
+	 * data like the data for xLocPr, yLocPr and the axis.  
 	 ********************************************************************************************************************/
-	class LineIntersects {
-	private:
+	class LineBasics {
+	protected:
 		// minMap x, y dimensions of spatial Node bounding box
 		minMaxPr xLocPr, yLocPr;
 		// axis of GroupNode
 		EVector::Axis splitDir;
-		// the size of the group  Node
-		// group lowerLeft;
-		// minMax pairs of the group Node
-		const minMaxPr xGroup, yGroup;
 	public:
 		// initialize all variables
-		LineIntersects(const GroupPair& StartLocation, const GroupPair& NTgroup);
+		LineBasics(const GroupPair& StartLocation);
 		// updates the StartLocation Group
 		void updateSearchCorner(Layout::GroupPair& loc);
 		// anyOverlaps determins if any splitlines within startLocation
@@ -42,17 +37,40 @@ namespace Layout {
 		// returns current Axis
 		EVector::Axis axis() const;
 	};
+	/* ******************************************************************************************************************
+	 * LineIntersects tests if a splitLine within a spatialLocation GroupPair splits a
+	 * combined group. The group has a non zero width and a height. It also tests whether a childNode is
+	 * overlapping with the group, where the group is within the location
+	 ********************************************************************************************************************/
+	class LineIntersects: public LineBasics {
+	private:
+		// the size of the group  Node
+		// group lowerLeft;
+		// minMax pairs of the group Node
+		const minMaxPr xGroup, yGroup;
+	public:
+		// initialize all variables
+		LineIntersects(const GroupPair& StartLocation, const GroupPair& NTgroup);
+		// anyOverlaps determins if any splitlines within startLocation
+		// could overlap with inputted nonterminal group
+		bool anyOverlaps() const;
+		// provide the size of the location and this will return true
+		// if the group is contained within location.  If it not within
+		// the location then one needs to look to the parent for a
+		// startGroup.
+		bool groupWithinLocation() const;
+		// used to get whether a child node with a minMaxPr
+		// along current splitDir overlaps with NTgroup
+		bool operator()(const minMaxPr pr) const;
+		// determines whether a splitline verlaps with current
+		// NTgroup.  The splitLine is within StartLocation group
+		bool operator()(const Efloat& splitLine) const;
+	};
 	// determine if a LineSegment overlaps with any splitline in the
 	// BranchNode.  Also given a LineSegment and a GroupNode will determine
 	// if the line segment overlaps with the group
-	class LineOverlapsLine {
+	class LineOverlapsLine: public LineBasics {
 		private:
-			// minMap x, y dimensions of spatial Node bounding box
-			// minMax pairs of the group Node
-		        minMaxPr xLocPr;
-			minMaxPr yLocPr;
-			// axis of GroupNode
-			EVector::Axis splitDir;
 			// this is the x or y minMaxPr along the splitDirection;
 			const Layout::LineSegment  line;  // the line that encodes
 			// true if the the splits in the branch Node are along
@@ -78,7 +96,6 @@ namespace Layout {
 			bool operator()(const Layout::minMaxPr pr) const; 
 			// true if the splitline overlaps the stored line
 			bool operator()(const Efloat& splitLine) const;
-			EVector::Axis axis() const;
 	};
 	/*******************************************************************************************************************
 	 *      @func findContainingParent will find the branch Node that contains the
@@ -385,20 +402,27 @@ bool  containedWithin(const Layout::minMaxPr a, const Layout::minMaxPr b)
 	bool overlaps {a.first <= b.first &&  b.second <= a.second};
 	return overlaps;
 }
+/* LineBasics holds common information;
+   group. The group has a non zero width and a height. It also tests whether a childNode is overlapping with the group,
+   where the group is within the location  and weth*/
+ 
+Layout::LineBasics::LineBasics(const Layout::GroupPair& loc):
+	xLocPr { Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x)}, 
+	yLocPr { Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y)},
+	splitDir { loc.first -> splitDir}
+{}
 /* LineIntersects tests if a splitLine within a spatialLocation Node splits a
    group. The group has a non zero width and a height. It also tests whether a childNode is overlapping with the group,
    where the group is within the location  and wether there are any overlaps at all*/
  
 Layout::LineIntersects::LineIntersects(const Layout::GroupPair& loc, const Layout::GroupPair& group):
-	xLocPr { Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x)}, 
-	yLocPr { Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y)},
-	splitDir { loc.first -> splitDir},
+	LineBasics(loc), 
 	xGroup { Layout::minMaxPr(group.second.x, group.second.x + group.first -> size.x)},
 	yGroup { Layout::minMaxPr(group.second.y, 
 	       	 group.second.y + group.first -> size.y)}
 {}
 		// updates the corner to begin searching from;
-void Layout::LineIntersects::updateSearchCorner(Layout::GroupPair& loc)
+void Layout::LineBasics::updateSearchCorner(Layout::GroupPair& loc)
 		{
 			 xLocPr = Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x); 
 			 yLocPr = Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y);
@@ -407,11 +431,19 @@ void Layout::LineIntersects::updateSearchCorner(Layout::GroupPair& loc)
 
 		// Given the size of the spatial Location Node, will determine
 		// in any lines within this node could possible be splitlines
+bool Layout::LineBasics::anyOverlaps() const
+		{
+		    return false;
+		}
 bool Layout::LineIntersects::anyOverlaps() const
 		{
 		    bool Overlaps {strictlyOverlap(xLocPr, xGroup)};
 		    Overlaps = Overlaps && strictlyOverlap(yLocPr, yGroup);
 		    return Overlaps;
+		}
+bool Layout::LineBasics::groupWithinLocation() const 
+		{
+		    return false;
 		}
 		// provide the size of the location and this will return true
 		// if the group is contained within location.  If it not within
@@ -423,10 +455,18 @@ bool Layout::LineIntersects::groupWithinLocation() const
 		    return Overlaps;
 		}
 		// used to get whether a child node
+bool Layout::LineBasics::operator()(const Layout::minMaxPr pr) const 
+		{
+			return  false;
+		}
 bool Layout::LineIntersects::operator()(const Layout::minMaxPr pr) const 
 		{
 			return  (splitDir == EVector::Axis::X) ? 
 				strictlyOverlap(pr, xGroup) : strictlyOverlap(pr, yGroup);
+		}
+bool Layout::LineBasics::operator()(const Efloat& splitLine) const
+		{
+		      return false;
 		}
 bool Layout::LineIntersects::operator()(const Efloat& splitLine) const
 		{
@@ -434,11 +474,7 @@ bool Layout::LineIntersects::operator()(const Efloat& splitLine) const
 			      strictlyOverlap(xGroup, xLocPr.first + splitLine):
 			      strictlyOverlap(yGroup, yLocPr.first + splitLine);
 		}
-EVector::Axis  Layout::LineIntersects::axis() const
-{
-	return splitDir;
-}
-EVector::Axis  Layout::LineOverlapsLine::axis() const
+EVector::Axis  Layout::LineBasics::axis() const
 {
 	return splitDir;
 }
@@ -447,19 +483,15 @@ EVector::Axis  Layout::LineOverlapsLine::axis() const
    where the group is within the location  and wether there are any overlaps at all*/
  
 Layout::LineOverlapsLine::LineOverlapsLine (const Layout::GroupPair& loc,  Layout::LineSegment ls):
-			 xLocPr { Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x)}, 
-			 yLocPr { Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y)},
-			 splitDir { loc.first -> splitDir},
+			LineBasics(loc),
 			 // splitDir == Y means the split lines go along X and
 			 // have one value at Y; for LineSegment this means
 			 // line.ax == X ( because line segment is along X)
 			 line  { ls}, aligned{ line.ax != splitDir}{}
 void Layout::LineOverlapsLine::updateSearchCorner(Layout::GroupPair& loc)
 		{
-			 xLocPr = Layout::minMaxPr(loc.second.x, loc.second.x + loc.first -> size.x); 
-			 yLocPr = Layout::minMaxPr(loc.second.y, loc.second.y + loc.first -> size.y);
-			 splitDir = loc.first -> splitDir;
-			 aligned = splitDir != line.ax;
+			LineBasics::updateSearchCorner(loc); 
+			aligned = splitDir != line.ax;
 		}
 bool Layout::LineOverlapsLine::anyOverlaps() const
 {
@@ -619,6 +651,56 @@ void Layout::addNTGroupToSplitLines(Layout::GroupPair ll, Layout::GroupPair ntGr
 		br ->addGroup( ntGroup.first, pr.second);
 	}
 }
+// basic Function: takes a const Node and inserts it into the NodeMap nm.
+void insertIntoNodeMap( Layout::NodeMap& nm,  std::shared_ptr<const Layout::Node> thisNode)
+{
+	auto lam{
+	   [=](const std::pair<Layout::uIDType, std::shared_ptr<const Layout::Node>>& T) -> bool
+	   {
+		   return T.second == thisNode;
+		} };
+	Layout::NodeMapItPr nmIt {nm.equal_range(thisNode ->v -> uid)};
+	Layout::NodeMapIt foundIt { std::find_if(nmIt.first, nmIt.second, lam)};
+	if (foundIt != nmIt.second) {
+		nm.insert(std::make_pair(thisNode->v ->uid, thisNode));
+		foundIt = std::find_if( ++nmIt.first, nmIt.second, lam);
+		if (foundIt !=nmIt.second) {
+			throw std::runtime_error("found twice in nodeMap");
+		}
+
+	}
+}
+/******************************************************************************
+ * addSplitsToNodeMap will all all of the nodes in a BranchSplitPair to an
+ * existing NodeMap (nm).  It will only add unique Nodes, not duplicats, where a
+ * duplicate is the name uid in the exact same location.
+ * *****************************************************************************/
+void addSplitsToNodeMap( Layout::NodeMap& nm, Layout::BranchSplitPair pr) 
+{
+		std::shared_ptr<const Layout::BranchNode> br { 
+			std::dynamic_pointer_cast<const Layout::BranchNode>(pr.first)};
+		if (br == nullptr) 
+		{ 
+			throw std::runtime_error("dynamic cast failed to get branch Node");
+		}
+		Layout::SplitIt start = br->splits.begin();
+		typedef std::vector<Layout::NodeMap>::size_type ST;
+		// loop over every split line
+		for (; pr.second.first != pr.second.second; ++pr.second.first)
+		{
+			ST indx { static_cast<ST>(pr.second.first - start)};
+			Layout::WeakMap& map { br -> splitGroups[indx]};
+			// loop over every element
+			for (Layout::WeakMapIt start { map.begin()}; start != map.end(); ++start)
+			{
+				if (start ->second.expired()){
+					throw std::runtime_error("expired Node is split");
+				}
+				insertIntoNodeMap(nm, start -> second.lock());
+			}
+		}
+}
+
 /******************************************************************************************************************************
  * @func        allSplitGroups will take lineSegment and return all the groups
  * 			that are split by the line segment. The groups returned
@@ -634,7 +716,7 @@ void Layout::addNTGroupToSplitLines(Layout::GroupPair ll, Layout::GroupPair ntGr
  *  		tree splitlines.  This gathers the splits from all of them. It
  *  		does not remove any groups from branch Nodes.
  *  ******************************************************************************************************************/
-Layout::NodeMap Layout::allsplitGroups(Layout::GroupPair ll, Layout::LineSegment& line)
+Layout::NodeMap Layout::allSplitGroups(Layout::GroupPair ll, Layout::LineSegment& line)
 {
 	Layout::LineOverlapsLine lol{ ll, line};
 	// get the line intersects class to determine overlaps and split lines 
@@ -642,16 +724,27 @@ Layout::NodeMap Layout::allsplitGroups(Layout::GroupPair ll, Layout::LineSegment
 	std::vector<Layout::BranchSplitPair> splits;
 	// find all the split lines
 	Layout::branchesWithOverlappingSplit(parent, lol, splits);
+	NodeMap nodes;
 	for ( Layout::BranchSplitPair pr : splits)
-	{
-		std::shared_ptr<const Layout::BranchNode> br { 
-			std::dynamic_pointer_cast<const Layout::BranchNode>(pr.first)};
-		if (br == nullptr) 
-		{ 
-			throw std::runtime_error("dynamic cast failed to get branch Node");
-		}
+	{ 
+		addSplitsToNodeMap(nodes, pr);
 	}
 	return  Layout::NodeMap();
+}
+
+/******************************************************************************************************************
+ *    @func     addNodeMaps(NodeMap sum, NodeMap other) will add all the unique
+ *    		shared pointers from new into sum.
+ *    @params[in]      sum:  all the unique const Nodes sorted by uid
+ *                     other:  other Node map to insert. Does not modify
+ *                     NodeMap& b.
+ * *************************************************************************************************************/
+void Layout::addToNodeMaps(Layout::NodeMap& sum, const Layout::NodeMap& b)
+{
+	for ( const std::pair<Layout::uIDType, std::shared_ptr<const Layout::Node>>& nodePair: b) 
+	{
+		insertIntoNodeMap(sum, nodePair.second);
+	}
 }
 
 
@@ -1638,40 +1731,43 @@ void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
 	       GroupMap::const_iterator lastValid{ pr.second};
 	       for ( ; pr.first != pr.second; )
 	       {
-		       bool matchFound {false};
-		       for (NodeMapIt current {nMapPr.first}; current != nMapPr.second; )
-			{
-				// match found
-				if ( current -> second == pr.first -> second.first) 
-				{
-					GroupMap::const_iterator next;
-					bool lastElement { false};
-					if (t == 0) {
-						next = pr.first;
-						lastElement = ( ++next == pr.second);
-					}
-					pr.first = removeGroupPair(pr.first, lastElement);
-					matchFound = true;
-					if (current == nMapPr.first) {
-						nMapPr.first = nMap.erase(current);
-					}
-					else {
-						nMap.erase(current);
-					}
-					break;
-				}
-				else {
-					++current; 
-				}
-			}
-		        if (!matchFound){
+		      auto lam{
+				   [=](const std::pair<uIDType, std::shared_ptr<const Node>>& T) -> bool
+				   {
+					   return T.second == pr.first->second.first;
+					} };
+		       NodeMapIt foundVal { std::find_if(nMapPr.first, nMapPr.second, lam)};
+		       // matchfound
+		       if (foundVal != nMapPr.second){
+			       if (foundVal == nMapPr.first) {
+				       nMapPr.first = nMap.erase(foundVal);
+			       }
+			       else {
+				       nMap.erase(foundVal);
+			       }
+			       // check for another matche that should not be
+			       // there
+		       	       foundVal = std::find_if(nMapPr.first, nMapPr.second, lam);
+			       if (foundVal != nMapPr.second) {
+				       throw std::runtime_error("Node is doubled in Node Map");
+			       }
+			       GroupMap::const_iterator next;
+			       bool lastElement { false};
+			       if (t == 0) {
+			       	next = pr.first;
+			       	lastElement = ( ++next == pr.second);
+			       }
+			       pr.first = removeGroupPair(pr.first, lastElement);
+		       }
+		       else{
 				lastValid = pr.first++;
 				++t;
 				if (t > 1 && nMapPr.first == nMapPr.second){
 					break;
 				}
-			}
-	       }
+		      }
+               }
+
 	       if (nMapPr.first != nMapPr.second) {
 		       throw std::runtime_error("Some Nodes not deleted");
 	       }

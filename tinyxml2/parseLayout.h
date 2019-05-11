@@ -221,7 +221,7 @@ namespace Layout {
  *  		tree splitlines.  This gathers the splits from all of them. It
  *  		does not remove any groups from branch Nodes.
  *  ******************************************************************************************************************/
-	NodeMap allsplitGroups(GroupPair ll, LineSegment& line);
+	NodeMap allSplitGroups(GroupPair ll, LineSegment& line);
 /******************************************************************************************************************
  *    @func     addNodeMaps(NodeMap sum, NodeMap other) will add all the unique
  *    		shared pointers from new into sum.
