@@ -1273,7 +1273,7 @@ std::shared_ptr<const Layout::Node> Layout::BottomUp::copyTree( std::shared_ptr<
 
 
 bool Layout::BottomUp::checkGroupPairStorage( std::shared_ptr<const Layout::Node>   thisNode, const EVector& minVal, 
-				const Layout::GroupPair& ntGroup, bool& termFound) 
+				const Layout::GroupPair& ntGroup, bool last, bool& termFound) 
 {
 	// copy values over
 	bool valid {false};
@@ -1313,7 +1313,7 @@ bool Layout::BottomUp::checkGroupPairStorage( std::shared_ptr<const Layout::Node
 	}
 	else{ 
 	    valid  = NodeSplit( SplitItPair( thisNode ->splits.begin(), thisNode->splits.end()), GroupPair(thisNode, minVal), 
-				    ntGroup);
+				    ntGroup, last);
 	    if (!valid) {
 		    return false;
 	    }
@@ -1323,7 +1323,7 @@ bool Layout::BottomUp::checkGroupPairStorage( std::shared_ptr<const Layout::Node
 	if ( thisNode -> splitDir == EVector::Axis::X) {
 		for (std::shared_ptr<const Node> child: thisNode ->children)
 		{
-			bool valid{checkGroupPairStorage(child, childMin, ntGroup, termFound) };
+			bool valid{checkGroupPairStorage(child, childMin, ntGroup, last, termFound) };
 			if (!valid){
 				return false;
 			}
@@ -1335,7 +1335,7 @@ bool Layout::BottomUp::checkGroupPairStorage( std::shared_ptr<const Layout::Node
 	else {
 		for (std::shared_ptr<const Node> child: thisNode ->children)
 		{
-			bool valid{checkGroupPairStorage(child, childMin, ntGroup, termFound) };
+			bool valid{checkGroupPairStorage(child, childMin, ntGroup, last, termFound) };
 			if (!valid){
 				return false;
 			}
@@ -1475,7 +1475,7 @@ Layout::GroupPair Layout::BottomUp::initializeLocationTree(const char * filename
 Layout::BottomUp::BottomUp( const char * filename): next{0}, names{}, groups{}, 
 	       location{initializeLocationTree(filename)}
 {
-		for (unsigned n{ 1 }; n <= location.first ->v->n/2; ++n)
+		for (unsigned n{ 1 }; n <= location.first ->v->n; ++n)
 		{
 			addNTGroups(n);
 		};
@@ -1484,24 +1484,33 @@ Layout::BottomUp::BottomUp( const Layout::BottomUp& other): next{0}, names{}, gr
 	       location{GroupPair(copyTree(other.location.first, other.location.second, std::weak_ptr<const Node>()), 
 			   other.location.second) }
 {
-		for (unsigned n{ 1 }; n <= location.first ->v->n/2; ++n)
+		for (unsigned n{ 1 }; n <= location.first ->v->n; ++n)
 		{
 			addNTGroups(n);
 		};
 }
 
-Layout::GroupMap::const_iterator Layout::BottomUp::findNode(std::shared_ptr<const Node> node) const
+Layout::GroupMap::const_iterator Layout::BottomUp::findNode(std::shared_ptr<const Node> node, bool * last) const
 {
 	GroupMapIt   pr { groups.equal_range(node -> v -> uid)};
-	for (; pr.first != pr.second; ++pr.first)
+	GroupMap::const_iterator next = pr.first;
+	// t is the count of elements
+	GroupMap::size_type t {0};
+	for (; pr.first != pr.second; ++pr.first, ++t)
 	{
 		if (pr.first -> second.first == node) {
+			++t;
 			break;
 		}
 	}
 	if (pr.first == pr.second)
 	{
 		pr.first == groups.end();
+		*last = (t == 1);
+	}
+	else {
+		GroupMap::const_iterator next = pr.first;
+		*last = (t == 1 && ++next == pr.second);
 	}
 	return pr.first;
 }
@@ -1547,6 +1556,9 @@ Layout::NodeFound keyFound(const Layout::WeakMap& map,  std::shared_ptr<const La
  * 		gpr     This is the groupPair of the BranchNode; its Node and
  * 			Node and Location.
  * 		ntGroup Here is the nonTerminal Group Node that should be found.
+ * 		bool    last  true if this group is the last of its type so the
+ * 		        splits should not be found regardless of whether there
+ * 		        is any overlap.
  * @return      bool    true means that the splits are valid.  Valid means that
  * 			if the node was found, it is in the splits and if the
  * 			node was not found it is not in the splits.
@@ -1554,7 +1566,8 @@ Layout::NodeFound keyFound(const Layout::WeakMap& map,  std::shared_ptr<const La
  * 			they should be and not found where they should not be
  * 			found.
  * ************************************************************************************************************/
-bool Layout::BottomUp::NodeSplit(Layout::SplitItPair split, const Layout::GroupPair& gpr, const Layout::GroupPair& ntPr) const
+bool Layout::BottomUp::NodeSplit(Layout::SplitItPair split, const Layout::GroupPair& gpr, const Layout::GroupPair& ntPr, 
+		   bool last ) const
 {
 	bool valid {false};
 	// gpr must be a branch Node
@@ -1575,6 +1588,11 @@ bool Layout::BottomUp::NodeSplit(Layout::SplitItPair split, const Layout::GroupP
 		NodeFound foundState { keyFound(map, ntPr.first)};
 		if (foundState == NodeFound::Error || foundState == NodeFound::Repeat){
 			return false;
+		}
+		// if this is the last occurance then the splits should have
+		// been removed already.
+		if ( last ) {
+			return foundState == NodeFound::NotFound;
 		}
 		LineSegment line (gpr, curr);
 		// bool test if LineOverlapsLine
@@ -1626,14 +1644,16 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		++second;
 		// one element so delete
 		if (second == pr.second) {
-			removeGroupPair(pr.first, true);
+			removeGroupPair( pr.first, RemoveType::LastSplitsOnly);
 		}
 	}
 }
 
-Layout::GroupMap::const_iterator Layout::BottomUp::removeGroupPair( Layout::GroupMap::const_iterator it, bool last)
+Layout::GroupMap::const_iterator Layout::BottomUp::removeGroupPair( Layout::GroupMap::const_iterator it, RemoveType type)
 {
-	if ( last) 
+	//  they have not been removed
+	bool splitsRemovedPrior { type == RemoveType::LastSplitRemoved};
+	if ( type == RemoveType::LastAll || type == RemoveType::LastSplitRemoved) 
 	{
 		nameMap::iterator  nameit = names.find( it -> second.first -> v -> name);
 		if (nameit == names.end())
@@ -1644,32 +1664,27 @@ Layout::GroupMap::const_iterator Layout::BottomUp::removeGroupPair( Layout::Grou
 	}
 	bool termsFound{ false };
 	assert( checkGroupPairStorage(location.first,
-			location.second, it ->second, termsFound) );
+			location.second, it ->second, splitRemovedPrior, termsFound) );
 	assert(termsFound);
-	assert(testAddingNodes(*this, it ->second));
-//	bool termsFound {false};
-//	bool success {checkGroupPairStorage(location.first, 
-//			location.second, it -> second, termsFound)}; 
-//	if (!(termsFound && success)) {
-//			throw std::runtime_error("group not inserted correctly");
-//	}
-//	success = testAddingNodes(*this, it->second); 
-//	if (!success) {
-//			throw std::runtime_error("group not inserted correctly");
-//	}
-	
+	assert(testAddingNodes(*this, it ->second, splitsRemovedPrior));
+	// remove from all the splitlines
 	EVector StartSearch = it -> second.second;
 	std::shared_ptr<const LeafNode>  llcorner { findLLNode(it -> second.first , 
 			                                    StartSearch,
 		                            it -> second.second)};
+	if (!splitsRemovedPrior) {
+		removeNTGroupFromSplitLines( GroupPair( llcorner, it ->second.second), 
+							it ->second);
+	}
+	if ( type == RemoveType::LastSplitOnly) {
+		return it;
+	}
 	bool success = llcorner ->removeFromXYLocMap(it ->second.first);
 	if (!success)
 	{
 	    throw std::runtime_error("failed to remove node in XY Location map");
 	}
-	// remove from all the splitlines
-	removeNTGroupFromSplitLines( GroupPair( llcorner, it ->second.second) , 
-			                                 it ->second);
+	
 	return groups.erase(it);
 }
 
@@ -1682,24 +1697,33 @@ Layout::GroupMap::const_iterator Layout::BottomUp::removeNode(std::shared_ptr<co
 		}
 	       	GroupMap::size_type t {0};
 	        GroupMap::const_iterator lastValid{ pr.second};
+		GroupMap::const_iterator next {pr.first};
+		bool removedSuccess{ false};
 		for (; pr.first != pr.second; ++pr.first)
 		{
+			// the next iterator in the series
+			++next;
 			if (pr.first ->second.first == n)
 			{
-				GroupMap::const_iterator next;
-				bool lastElement { false};
-				if (t == 0) {
-					next = pr.first;
-					lastElement = ( ++next == pr.second);
+				// This case is that the one Node left matches-
+				if (t == 0 && next == pr.second) {
+					pr.first = removeGroupPair(pr.first, RemoveType::LastSplitRemoved);
 				}
-				pr.first = removeGroupPair(pr.first, lastElement);
+				else {
+					pr.first = removeGroupPair(pr.first, RemoveType::NotLastAll);
+				}
+				removedSuccess = true;
 				break;
 			}
 			else {
 				lastValid = pr.first++;
 				++t;
 			}
-		}// check for non match
+		}
+		if ( !removedSuccess) {
+			throw std::runtime_error("No match Found");
+		}
+		// check for non match
 		for (; pr.first != pr.second; ++pr.first)
 		{
 			if (pr.first ->second.first == n)
@@ -1713,6 +1737,10 @@ Layout::GroupMap::const_iterator Layout::BottomUp::removeNode(std::shared_ptr<co
 			}
 		}
 		*singleLeft = (t == 1);
+		// keep the rule that the last element has no splits
+		if (singleLeft) {
+			removeGroupPair(lastValid, RemoveType::LastSplitOnly);
+		}
 		return lastValid;
 }
 void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
@@ -1728,9 +1756,13 @@ void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
 	       // t is the number of Group Pairs of this type that have not
 	       // matched.
 	       GroupMap::size_type t {0};
+	       // n number matched
+	       GroupMap::size_type n {0};
 	       GroupMap::const_iterator lastValid{ pr.second};
+	       GroupMap::const_iterator next {pr.first};
 	       for ( ; pr.first != pr.second; )
 	       {
+		      next++;
 		      auto lam{
 				   [=](const std::pair<uIDType, std::shared_ptr<const Node>>& T) -> bool
 				   {
@@ -1751,13 +1783,19 @@ void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
 			       if (foundVal != nMapPr.second) {
 				       throw std::runtime_error("Node is doubled in Node Map");
 			       }
-			       GroupMap::const_iterator next;
-			       bool lastElement { false};
-			       if (t == 0) {
-			       	next = pr.first;
-			       	lastElement = ( ++next == pr.second);
-			       }
-			       pr.first = removeGroupPair(pr.first, lastElement);
+				// This case is that the one Node left matches-
+				if (t == 0 && n == 0 && next == pr.second) {
+					pr.first = removeGroupPair(pr.first, RemoveType::LastSplitRemoved);
+				}
+				else if (next != pr.second)
+				{
+					pr.first = removeGroupPair(pr.first, RemoveType::NotLastAll);
+				}
+				else {
+					pr.first = removeGroupPair(pr.first, RemoveType::LastAll);
+				}
+				n++;
+				removedSuccess = true;
 		       }
 		       else{
 				lastValid = pr.first++;
@@ -1772,7 +1810,7 @@ void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
 		       throw std::runtime_error("Some Nodes not deleted");
 	       }
 	       if (t == 1) {
-		       removeGroupPair(lastValid, true);
+		       removeGroupPair(lastValid, RemoveType::LastSplitOnly);
 	       }
 }
 
@@ -2031,9 +2069,9 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
 						NewGroupPr);
 					bool termsFound{ false };
 					assert( checkGroupPairStorage(location.first,
-							location.second, NewGroupPr, termsFound) );
+							location.second, NewGroupPr, false, termsFound) );
 					assert(termsFound);
-					assert(testAddingNodes(*this, NewGroupPr));
+					assert(testAddingNodes(*this, NewGroupPr, false));
 					break;
 				}
 				case NewExpired:
@@ -2076,9 +2114,10 @@ void Layout::BottomUp::addNTGroups(Layout::GroupMapIt pr, EVector::Axis ax, unsi
  *  	     overlaps the split line.  This exercises LineIntersects and
  *  	     LineOverlapsLine.  
  * ***************************************************************************************************************/
-bool Layout::testAddingNodes(const BottomUp&  bu, GroupPair pr)
+bool Layout::testAddingNodes(const BottomUp&  bu, GroupPair pr, bool priorlast)
 {
-	 GroupMap::const_iterator it { bu.findNode(pr.first)};
+	bool  last {false}; 
+	GroupMap::const_iterator it { bu.findNode(pr.first, &last)};
 	 if (it == bu.groups.end())
 	 {
 		 return false;
@@ -2121,13 +2160,14 @@ bool Layout::testAddingNodes(const BottomUp&  bu, GroupPair pr)
 	for (BranchSplitPair oneSplit:splits)
 	{
 	        std::shared_ptr<const Node> llcorner {findLLCornerBranch(oneSplit.first)};
-		GroupMap::const_iterator it { bu.findNode(llcorner)};
+		GroupMap::const_iterator it { bu.findNode(llcorner, &last)};
+		last = last && priorlast;
 		 if (it == bu.groups.end()) {
 			 return false;
 		 }
 		 // second argument is the branch in the location tree and its ll corner
 	     bool found = bu.NodeSplit(oneSplit.second, 
-			      Layout::GroupPair(oneSplit.first, it -> second.second), pr);
+			      Layout::GroupPair(oneSplit.first, it -> second.second), pr, last);
 	     if (!found){
 		     return false;
 	     }

@@ -386,13 +386,21 @@ namespace Layout {
  *  @func	removeGroupPair will remove a GroupPair first from the
  *  		BranchNodes, then the terminal Nodes, then the GroupMap.
  *  @params[in]  it is the Group iterator.
+ *               RemoveType specifies what to remove.
  *               last  true if this is the last iterator with this uid in the
- *               map. Then we would also erase the group from the names map
+ *               	map. Then we would also erase the group from the names map
+ *              removeSplits   
  *  @return     the iterator of the next element in the container.
  *  @brief      This will remove one GroupPair from the LL corner map, from the
  *  		split groups, from groups and from names.
  *  *************************************************************************************************************/
-		GroupMap::const_iterator removeGroupPair(GroupMap::const_iterator it, bool last = false);
+ /*                     NotLastAll   split there and more than one left
+ *                     LastSplitOnly   Last means last Element Remove the split-- splits are there
+ *                     LastSplitRemoved split already removed
+ *                     LastAll          last and all needs to be removed 
+ *                     ***************************************************************************************/
+		enum  RemoveType { NotLastAll, LastSplitOnly, LastSplitRemoved, LastAll};
+		GroupMap::const_iterator removeGroupPair(GroupMap::const_iterator it, RemoveType );
 /*************************************************************************************************************
  *  @func	removeNode will remove a Node first from the
  *  		BranchNodes, then the terminal Nodes, then the GroupMap.
@@ -422,9 +430,10 @@ namespace Layout {
  * @func        GroupMap::const_iterator  findNode will find the group Pair
  * 			iterator for a node.  It looks it up in the group Map.
  * @params[in]  node
+ *              bool *   true if there is only one element left in the tree
  * @return      groupMap iterator
  * ************************************************************************************************************/
-		GroupMap::const_iterator findNode(std::shared_ptr<const Node> node) const;
+		GroupMap::const_iterator findNode(std::shared_ptr<const Node> node, bool * last) const;
 /*************************************************************************************************************
  * @func        NodeSplit will check if the nt group really is split by the
  * 			non terminal node (ntNode). If the group is found in the
@@ -436,6 +445,9 @@ namespace Layout {
  * 		gpr     This is the groupPair of the BranchNode; its Node and
  * 			Node and Location.
  * 		ntGroup Here is the nonTerminal Group Node that should be found.
+ * 		bool    last  true if this group is the last of its type so the
+ * 		        splits should not be found regardless of whether there
+ * 		        is any overlap.
  * @return      bool    true means that the splits are valid.  Valid means that
  * 			if the node was found, it is in the splits and if the
  * 			node was not found it is not in the splits.
@@ -443,7 +455,7 @@ namespace Layout {
  * 			they should be and not found where they should not be
  * 			found.
  * ************************************************************************************************************/
-		bool NodeSplit(SplitItPair split, const GroupPair& gpr, const GroupPair& ntPr) const;
+		bool NodeSplit(SplitItPair split, const GroupPair& gpr, const GroupPair& ntPr, bool last) const;
 	private:
 		//take an XMLNodePr and generate a tree of all subnodes that
 		//have this XMLNodePr as a root.
@@ -465,10 +477,12 @@ namespace Layout {
  *  @params[in]   thisNode  current Node, 
  *  	           minVal ll corner,
  *  	           ntGroup   GroupPair of tested Group
+ *  	           last      means the GroupPair is the last one of its kind. It was
+ *  	                     inserted and the splits then removed.  
  *  	           termFound  true if the term was found
  *  	           *************************************************************************************************/
 		bool checkGroupPairStorage( std::shared_ptr<const Node>   otherNode, const EVector& minVal, 
-				const GroupPair& ntGroup, bool& termFound); 
+				const GroupPair& ntGroup, bool last, bool& termFound); 
 ///****************************************************************************************************
 // *          addNodeValue will just add the NodeValue to the nameMap; if
 //	    there is one there already, this returns the current one and
@@ -545,9 +559,10 @@ namespace Layout {
  *  	     the splits and branches it finds a list of branches where it should
  *  	     be then checks each one whether it is there and wether it actually
  *  	     overlaps the split line.  This exercises LineIntersects and
- *  	     LineOverlapsLine.  
+ *  	     LineOverlapsLine. 
+ *           last is true if the GroupPair is the last and already had its splits removed.
  * ***************************************************************************************************************/
-	bool testAddingNodes(const BottomUp&  bu, GroupPair pr);
+	bool testAddingNodes(const BottomUp&  bu, GroupPair pr, bool last);
 	tinyxml2::XMLElement* getElement(tinyxml2::XMLDocument*, char* input);
 	
 	tinyxml2::XMLNode* getMainShape(tinyxml2::XMLDocument* doc);
