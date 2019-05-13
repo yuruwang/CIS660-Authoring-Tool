@@ -318,6 +318,14 @@ int main( int argc, const char ** argv )
 	if ( argc > 1 ) {
 		clock_t startTime = clock();
 		unique_ptr<Layout::BottomUp> bu (new Layout::BottomUp(argv[1]));
+		EVector startSearch {bu -> location.second};
+		std::shared_ptr<const Layout::LeafNode> ll { Layout::findLLNode(
+				 bu->location.first, startSearch, bu ->location.second)};
+
+		std::list<std::shared_ptr<const Layout::Node>> XBoxes {
+			ll -> findXYLocMap(EVector::Axis::X, bu->location.first ->size.x)};
+		std::list<std::shared_ptr<const Layout::Node>> YBoxes {
+			ll -> findXYLocMap(EVector::Axis::Y, bu->location.first ->size.y)};
 		Layout::BottomUp copy(*bu);
 		bu = nullptr;
  		clock_t loadTime = clock();

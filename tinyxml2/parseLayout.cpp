@@ -1644,7 +1644,7 @@ void Layout::BottomUp::removeSingles(uIDType current, uIDType last)
 		++second;
 		// one element so delete
 		if (second == pr.second) {
-			removeGroupPair( pr.first, RemoveType::LastSplitsOnly);
+			removeGroupPair( pr.first, RemoveType::LastSplitOnly);
 		}
 	}
 }
@@ -1664,7 +1664,7 @@ Layout::GroupMap::const_iterator Layout::BottomUp::removeGroupPair( Layout::Grou
 	}
 	bool termsFound{ false };
 	assert( checkGroupPairStorage(location.first,
-			location.second, it ->second, splitRemovedPrior, termsFound) );
+			location.second, it ->second, splitsRemovedPrior, termsFound) );
 	assert(termsFound);
 	assert(testAddingNodes(*this, it ->second, splitsRemovedPrior));
 	// remove from all the splitlines
@@ -1795,7 +1795,6 @@ void Layout::BottomUp::removeNodes(Layout::NodeMap& nMap)
 					pr.first = removeGroupPair(pr.first, RemoveType::LastAll);
 				}
 				n++;
-				removedSuccess = true;
 		       }
 		       else{
 				lastValid = pr.first++;
