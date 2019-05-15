@@ -27,3 +27,27 @@ Some example runs demonstrate success.  One xml File F00_test10.xml has 837 term
 
 it is  With this, one can sele to create at each location in the facade a list of all possible groups  that have 
 
+
+
+There are three functions for removing Nodes that use removeGroupPair.  Each one
+of the structures preserves the order of the data structures while removing.
+Order here means that if a group is repeated then if it is split by a rule it
+should incur a cost.  If it is a single group it should not incur a cost to
+split. If a single group is split, there is is no repeat rule that will no
+longer be possible, so there should be no cost to splitting.
+
+Singles need to also be kept track of.  is necessary to keep single groups too in both the LL Corner structure
+
+
+Discussion:
+
+high_rise:
+
+terms: 
+15.  357 repeated terminals in the xml file,  229 unique groups, 1533 groups.
+     Largest group composed of 357 terminals.  First division has 4 split lines,
+     findXYLocMap finds 5 groups with an X width = 0.323 as it should, the
+     smallest of which has 36 terminals, largest is 357 terminals.
+
+ all tests run, no exceptions thrown
+

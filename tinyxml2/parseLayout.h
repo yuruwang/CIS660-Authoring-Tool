@@ -508,7 +508,8 @@ namespace Layout {
 				std::weak_ptr<const Node> nodeParent, const EVector& minVal, 
 				int level, nameMap& namesFound);
 /*************************************************************************************************************
- * @func  	removeSingles  removes groups that are repeated only once
+ * @func  	removeSingles  removes groups from the SplitCost function that
+ * 			are singles
  * @params 	[start, last),   First(inclusive), Last[exclusive] ID to search from
  * ************************************************************************************************************/
 		void removeSingles(uIDType start, uIDType last);
